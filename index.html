@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muro de respuestas — Concierto Conferencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0b07; --panel:#17120a;
+    --ink:#f4e8d0; --ink-soft:#c9b389;
+    --gold:#e0a955; --gold-deep:#b3792c;
+    --line:rgba(224,169,85,.22);
+    --ok:#7fb069; --no:#c26a5a;
+    --serif:"Newsreader",Georgia,serif;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100%;overflow-x:hidden}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:.45;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E")}
+
+  .switch{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:4px;padding:4px;
+    border-radius:999px;background:rgba(23,18,10,.92);border:1px solid var(--line);backdrop-filter:blur(8px)}
+  .switch button{border:0;background:transparent;color:var(--ink-soft);cursor:pointer;font-family:var(--sans);
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:8px 14px;border-radius:999px;transition:.18s}
+  .switch button:hover{color:var(--ink)}
+  .switch button.on{background:var(--gold-deep);color:#1a1206;font-weight:600}
+  .switch.hidden{display:none}
+
+  .view{display:none;min-height:100vh}
+  .view.on{display:block}
+
+  #proyeccion{background-image:
+    radial-gradient(ellipse 80% 55% at 50% 0%, rgba(179,121,44,.28), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(224,169,85,.10), transparent 70%)}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:5;box-shadow:inset 0 0 22vw 6vw rgba(0,0,0,.6)}
+  .stage{position:relative;z-index:2;display:flex;flex-direction:column;min-height:100vh;padding:5vh 4vw 3vh}
+  .kicker{font-size:clamp(10px,1vw,13px);letter-spacing:.34em;text-transform:uppercase;color:var(--gold);opacity:.85;text-align:center;margin-bottom:1.4vh}
+  h1{font-family:var(--serif);font-weight:300;line-height:1.08;font-size:clamp(26px,4.4vw,64px);letter-spacing:-.01em;text-align:center}
+  h1 em{font-style:italic;color:var(--gold)}
+  .sub{margin-top:1.6vh;text-align:center;font-size:clamp(12px,1.2vw,17px);color:var(--ink-soft)}
+  .rule{width:min(560px,70vw);height:1px;margin:2.6vh auto 0;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .invite{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh}
+  .invite .qr{width:min(34vh,30vw);min-width:180px}
+  .invite .url{font-family:var(--serif);font-size:clamp(20px,2.6vw,38px);color:var(--gold)}
+  .invite .tip{font-size:clamp(11px,1.1vw,15px);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  .invite.gone{display:none}
+  .wall{flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
+    gap:clamp(14px,2.2vw,40px) clamp(18px,2.6vw,52px);padding:4vh 0 2vh}
+  .card{text-align:center;opacity:0;transform:translateY(26px) scale(.94);
+    animation:enter .9s cubic-bezier(.22,.9,.3,1) forwards;max-width:min(420px,44vw)}
+  .card .word{font-family:var(--serif);font-weight:400;line-height:1.12;text-wrap:balance;animation:float 7s ease-in-out infinite}
+  .card .who{margin-top:.5em;font-size:clamp(9px,.82vw,12px);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.7}
+  .card.s1 .word{font-size:clamp(17px,2vw,29px);color:var(--ink-soft)}
+  .card.s2 .word{font-size:clamp(21px,2.7vw,41px)}
+  .card.s3 .word{font-size:clamp(25px,3.5vw,54px)}
+  @keyframes enter{to{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @media (prefers-reduced-motion:reduce){.card,.card .word{animation-duration:.01ms;animation-iteration-count:1}.card{opacity:1;transform:none}}
+  .foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    border-top:1px solid var(--line);padding-top:2.2vh;opacity:0;transition:opacity .8s}
+  .foot.show{opacity:1}
+  .foot .qr{width:clamp(52px,4.6vw,72px)}
+  .qr-hint{display:flex;align-items:center;gap:14px}
+  .qr-text{font-size:clamp(11px,1vw,14px);line-height:1.5;color:var(--ink-soft)}
+  .qr-text b{display:block;color:var(--ink);font-weight:500}
+  .count{text-align:right}
+  .count b{font-family:var(--serif);font-weight:400;display:block;font-size:clamp(24px,3vw,44px);line-height:1;color:var(--gold)}
+  .count span{font-size:clamp(9px,.82vw,12px);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .qr{aspect-ratio:1;flex:none;border-radius:8px;background:var(--ink);padding:5%;
+    display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);gap:3%}
+  .qr i{background:transparent;border-radius:1px}
+  .qr i.on{background:var(--bg)}
+
+  #celular{display:none;place-items:center;padding:80px 20px 40px;min-height:100vh}
+  #celular.on{display:grid}
+  .phone{width:min(340px,92vw);border:1px solid var(--line);border-radius:28px;background:var(--panel);
+    padding:30px 24px 26px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+  .phone .brand{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);text-align:center}
+  .phone h2{font-family:var(--serif);font-weight:300;font-size:26px;line-height:1.15;margin:14px 0 6px;text-align:center}
+  .phone .note{font-size:12px;color:var(--ink-soft);text-align:center;margin-bottom:22px}
+  .phone label{display:block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px}
+  .phone input{width:100%;padding:13px 14px;margin-bottom:14px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(244,232,208,.06);color:var(--ink);font-family:var(--sans);font-size:15px}
+  .phone input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .phone .counter{font-size:10px;color:var(--ink-soft);text-align:right;margin:-10px 0 14px}
+  .phone .counter.bad{color:var(--no)}
+  .big{width:100%;padding:14px;border-radius:10px;border:0;background:var(--gold-deep);color:#1a1206;
+    font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:.18s}
+  .big:hover{background:var(--gold)}
+  .big:disabled{opacity:.45;cursor:wait}
+  .sent{text-align:center;padding:16px 0}
+  .sent .tick{font-size:40px;color:var(--ok);line-height:1}
+  .sent p{margin-top:12px;font-size:14px;color:var(--ink-soft);line-height:1.6}
+  .sent button{margin-top:18px;background:transparent;border:1px solid var(--line);color:var(--ink);
+    padding:10px 16px;border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--sans)}
+  .closed{text-align:center;font-size:13px;color:var(--ink-soft);padding:20px 0;line-height:1.6}
+
+  #moderacion{padding:78px 4vw 40px}
+  .mod-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
+  .mod-head h2{font-family:var(--serif);font-weight:300;font-size:24px}
+  .mod-head .state{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media (max-width:760px){.cols{grid-template-columns:1fr}}
+  .col h3{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:600}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:10px;margin-bottom:9px;background:rgba(244,232,208,.03)}
+  .item .txt{flex:1;min-width:0}
+  .item .t{font-family:var(--serif);font-size:18px;line-height:1.2}
+  .item .n{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);opacity:.7;margin-top:3px}
+  .mini{border:1px solid var(--line);background:transparent;color:var(--ink);width:32px;height:32px;
+    border-radius:8px;cursor:pointer;font-size:14px;flex:none;transition:.18s}
+  .mini.ok:hover{background:rgba(127,176,105,.2);border-color:var(--ok);color:var(--ok)}
+  .mini.no:hover{background:rgba(194,106,90,.2);border-color:var(--no);color:var(--no)}
+  .empty{font-size:12px;color:var(--ink-soft);opacity:.6;padding:14px 0}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;border-top:1px solid var(--line);padding-top:18px}
+  .tools button{border:1px solid var(--line);background:transparent;color:var(--ink);padding:10px 14px;
+    border-radius:8px;font-size:11px;letter-spacing:.06em;cursor:pointer;font-family:var(--sans);transition:.18s}
+  .tools button:hover{background:rgba(224,169,85,.14);border-color:var(--gold)}
+  .tools button.on{background:rgba(224,169,85,.2);border-color:var(--gold);color:var(--gold)}
+  .tip{margin-top:16px;font-size:11px;color:var(--ink-soft);opacity:.75;line-height:1.7}
+  .badge{display:inline-block;min-width:20px;padding:1px 6px;border-radius:999px;background:var(--gold-deep);
+    color:#1a1206;font-size:10px;font-weight:700;margin-left:6px}
+
+  .conn{position:fixed;left:14px;bottom:14px;z-index:20;display:flex;align-items:center;gap:7px;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+    background:rgba(23,18,10,.9);border:1px solid var(--line);border-radius:999px;padding:7px 13px}
+  .conn .led{width:7px;height:7px;border-radius:50%;background:var(--no)}
+  .conn.ok .led{background:var(--ok)}
+  .conn.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<nav class="switch" id="switch">
+  <button data-v="proyeccion" class="on">Proyección</button>
+  <button data-v="celular">Celular</button>
+  <button data-v="moderacion">Moderación <span class="badge" id="badge">0</span></button>
+</nav>
+
+<div class="conn" id="conn"><span class="led"></span><span id="connTxt">Conectando…</span></div>
+
+<section class="view on" id="proyeccion">
+  <div class="vignette"></div>
+  <div class="stage">
+    <header>
+      <div class="kicker">Concierto Conferencia · Colombia Noviolenta</div>
+      <h1>¿Qué reflexión te deja <em>este cuento?</em></h1>
+      <div class="sub">El monje, el diamante y el desapego · respondan en tres palabras</div>
+      <div class="rule"></div>
+    </header>
+    <div class="invite" id="invite">
+      <div class="qr" data-qr></div>
+      <div class="url" id="url1">cnv.co/concierto</div>
+      <div class="tip">Escanea y participa</div>
+    </div>
+    <main class="wall" id="wall" aria-live="polite"></main>
+    <footer class="foot" id="foot">
+      <div class="qr-hint">
+        <div class="qr" data-qr></div>
+        <div class="qr-text"><b>Aún puedes participar</b><span id="url2">cnv.co/concierto</span></div>
+      </div>
+      <div class="count"><b id="count">0</b><span>respuestas</span></div>
+    </footer>
+  </div>
+</section>
+
+<section class="view" id="celular">
+  <div class="phone">
+    <div class="brand">Colombia Noviolenta</div>
+    <h2>¿Qué reflexión te deja este cuento?</h2>
+    <p class="note">Respóndenos en tres palabras</p>
+    <div id="form">
+      <label for="pWord">Tu respuesta</label>
+      <input id="pWord" maxlength="40" placeholder="El desapego libera" autocomplete="off">
+      <div class="counter" id="pCount">0 palabras</div>
+      <label for="pName">Tu nombre</label>
+      <input id="pName" maxlength="24" placeholder="Como quieres que aparezca" autocomplete="off">
+      <button class="big" id="pSend">Enviar a la pantalla</button>
+    </div>
+    <div class="sent" id="sent" hidden>
+      <div class="tick">✓</div>
+      <p>Tu respuesta va en camino.<br>Mira la pantalla.</p>
+      <button id="again">Enviar otra</button>
+    </div>
+    <div class="closed" id="closed" hidden>
+      La participación está cerrada por ahora.<br>Espera la señal desde la tarima.
+    </div>
+  </div>
+</section>
+
+<section class="view" id="moderacion">
+  <div class="mod-head">
+    <h2>Panel de moderación</h2>
+    <div class="state" id="state">Participación abierta</div>
+  </div>
+  <div class="cols">
+    <div class="col"><h3>Por revisar</h3><div id="pending"><p class="empty">Nada pendiente.</p></div></div>
+    <div class="col"><h3>En pantalla</h3><div id="live"><p class="empty">El muro está vacío.</p></div></div>
+  </div>
+  <div class="tools">
+    <button id="toggleOpen">Cerrar participación</button>
+    <button id="auto">Simular público</button>
+    <button id="approveAll">Aprobar todo</button>
+    <button id="clear">Limpiar muro</button>
+  </div>
+  <p class="tip">
+    Las respuestas llegan de los celulares y entran aquí primero: nada se proyecta sin aprobación.
+    Todo viaja por Firestore, así que la proyección puede estar en otro computador y se actualiza sola.
+  </p>
+</section>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, setDoc, getDoc,
+  onSnapshot, query, orderBy, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfHjVn6dQxjjOybX2x4W8xJNnGGcapBMM",
+  authDomain: "muro-cnv.firebaseapp.com",
+  projectId: "muro-cnv",
+  storageBucket: "muro-cnv.firebasestorage.app",
+  messagingSenderId: "758749379133",
+  appId: "1:758749379133:web:0b513294f4aecd2234c854"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const RESP = collection(db, "respuestas");
+const CONF = doc(db, "config", "estado");
+
+const MAX_EN_PANTALLA = 14;
+let all = [], isOpen = true;
+
+/* ---------- QR decorativo ---------- */
+const pat = "110101110010110011101001101110101001110010110111001011001110100111010110";
+document.querySelectorAll("[data-qr]").forEach(box=>{
+  for(let i=0;i<81;i++){
+    const c=document.createElement("i");
+    const corner=(i<3||(i>8&&i<12)||(i>17&&i<21))||(i%9>5&&i<27)||(i>53&&i%9<3);
+    if(pat[i%pat.length]==="1"||corner) c.className="on";
+    box.appendChild(c);
+  }
+});
+// si la página está publicada, muestra su propia dirección
+const host = location.hostname && location.hostname!=="localhost" ? location.host+location.pathname : null;
+if(host){ document.getElementById("url1").textContent=host; document.getElementById("url2").textContent=host; }
+
+/* ---------- vistas ---------- */
+const sw=document.getElementById("switch");
+sw.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-v]"); if(!b) return;
+  sw.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
+  document.getElementById(b.dataset.v).classList.add("on");
+});
+document.addEventListener("keydown",e=>{
+  if((e.key==="h"||e.key==="H")&&!/input/i.test(document.activeElement.tagName)){
+    sw.classList.toggle("hidden");
+    document.getElementById("conn").classList.toggle("hidden");
+  }
+});
+
+/* ---------- conexión ---------- */
+const conn=document.getElementById("conn"), connTxt=document.getElementById("connTxt");
+function setConn(ok,msg){ conn.classList.toggle("ok",ok); connTxt.textContent=msg; }
+
+/* ---------- escucha en tiempo real ---------- */
+onSnapshot(query(RESP, orderBy("ts","asc")),
+  snap=>{
+    all = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    setConn(true,"En vivo");
+    renderAll();
+  },
+  err=>{ setConn(false,"Sin conexión"); console.error(err); }
+);
+
+getDoc(CONF).then(s=>{ if(!s.exists()) setDoc(CONF,{open:true}); });
+onSnapshot(CONF, s=>{ if(s.exists()){ isOpen = s.data().open !== false; renderAll(); } });
+
+/* ---------- proyección ---------- */
+const wall=document.getElementById("wall"), invite=document.getElementById("invite"),
+      foot=document.getElementById("foot"), countEl=document.getElementById("count");
+const shown={};
+function renderWall(){
+  const live = all.filter(r=>r.status==="live").slice(-MAX_EN_PANTALLA);
+  const aprobadas = all.filter(r=>r.status==="live"||r.status==="archived").length;
+  invite.classList.toggle("gone", live.length>0);
+  foot.classList.toggle("show", live.length>0);
+  countEl.textContent = aprobadas;
+  const ids={}; live.forEach(r=>ids[r.id]=1);
+  [...wall.children].forEach(el=>{ if(!ids[el.dataset.id]){ el.remove(); delete shown[el.dataset.id]; } });
+  live.forEach(r=>{
+    if(shown[r.id]) return;
+    shown[r.id]=1;
+    const card=document.createElement("div");
+    card.className="card s"+(r.size||2); card.dataset.id=r.id;
+    const w=document.createElement("div"); w.className="word"; w.textContent=r.text;
+    w.style.animationDelay=(Math.random()*4).toFixed(2)+"s";
+    const n=document.createElement("div"); n.className="who"; n.textContent=r.name||"anónimo";
+    card.append(w,n); wall.appendChild(card);
+  });
+}
+
+/* ---------- celular ---------- */
+const pWord=document.getElementById("pWord"), pName=document.getElementById("pName"),
+      pCount=document.getElementById("pCount"), form=document.getElementById("form"),
+      sentBox=document.getElementById("sent"), closedBox=document.getElementById("closed"),
+      pSend=document.getElementById("pSend");
+const words=s=>s.trim().split(/\s+/).filter(Boolean);
+pWord.addEventListener("input",()=>{
+  const n=words(pWord.value).length;
+  pCount.textContent=n+(n===1?" palabra":" palabras");
+  pCount.classList.toggle("bad",n>3);
+});
+pSend.addEventListener("click",async()=>{
+  const t=pWord.value.trim(), n=pName.value.trim();
+  if(!t){ pWord.focus(); return; }
+  if(words(t).length>3){ pCount.classList.add("bad"); pWord.focus(); return; }
+  pSend.disabled=true; pSend.textContent="Enviando…";
+  try{
+    await addDoc(RESP,{ text:t, name:n, status:"pending", size:1+Math.floor(Math.random()*3), ts:Date.now() });
+    pWord.value=""; pName.value=""; pCount.textContent="0 palabras";
+    form.hidden=true; sentBox.hidden=false;
+  }catch(e){ alert("No se pudo enviar. Revisa la conexión."); console.error(e); }
+  pSend.disabled=false; pSend.textContent="Enviar a la pantalla";
+});
+document.getElementById("again").addEventListener("click",()=>{
+  sentBox.hidden=true; form.hidden=false; pWord.focus();
+});
+function renderPhone(){
+  if(isOpen){ closedBox.hidden=true; if(sentBox.hidden) form.hidden=false; }
+  else { closedBox.hidden=false; form.hidden=true; sentBox.hidden=true; }
+}
+
+/* ---------- moderación ---------- */
+const pendBox=document.getElementById("pending"), liveBox=document.getElementById("live"),
+      badge=document.getElementById("badge"), stateEl=document.getElementById("state"),
+      openBtn=document.getElementById("toggleOpen");
+const setStatus=(id,status)=>updateDoc(doc(db,"respuestas",id),{status});
+
+function row(r,kind){
+  const d=document.createElement("div"); d.className="item";
+  const t=document.createElement("div"); t.className="txt";
+  t.innerHTML='<div class="t"></div><div class="n"></div>';
+  t.querySelector(".t").textContent=r.text;
+  t.querySelector(".n").textContent=r.name||"anónimo";
+  d.appendChild(t);
+  if(kind==="pending"){
+    const ok=document.createElement("button"); ok.className="mini ok"; ok.textContent="✓"; ok.title="Aprobar";
+    ok.onclick=()=>setStatus(r.id,"live");
+    const no=document.createElement("button"); no.className="mini no"; no.textContent="✕"; no.title="Descartar";
+    no.onclick=()=>setStatus(r.id,"rejected");
+    d.append(ok,no);
+  }else{
+    const rm=document.createElement("button"); rm.className="mini no"; rm.textContent="✕"; rm.title="Quitar de pantalla";
+    rm.onclick=()=>setStatus(r.id,"archived");
+    d.appendChild(rm);
+  }
+  return d;
+}
+function renderMod(){
+  const pend=all.filter(r=>r.status==="pending");
+  const live=all.filter(r=>r.status==="live");
+  badge.textContent=pend.length;
+  stateEl.textContent=isOpen?"Participación abierta":"Participación cerrada";
+  openBtn.textContent=isOpen?"Cerrar participación":"Abrir participación";
+  openBtn.classList.toggle("on",!isOpen);
+  pendBox.innerHTML=""; liveBox.innerHTML="";
+  if(!pend.length) pendBox.innerHTML='<p class="empty">Nada pendiente.</p>';
+  else pend.forEach(r=>pendBox.appendChild(row(r,"pending")));
+  if(!live.length) liveBox.innerHTML='<p class="empty">El muro está vacío.</p>';
+  else live.slice().reverse().forEach(r=>liveBox.appendChild(row(r,"live")));
+}
+
+openBtn.addEventListener("click",()=>setDoc(CONF,{open:!isOpen}));
+document.getElementById("approveAll").addEventListener("click",async()=>{
+  const b=writeBatch(db);
+  all.filter(r=>r.status==="pending").forEach(r=>b.update(doc(db,"respuestas",r.id),{status:"live"}));
+  await b.commit();
+});
+document.getElementById("clear").addEventListener("click",async()=>{
+  const b=writeBatch(db);
+  all.filter(r=>r.status==="live").forEach(r=>b.update(doc(db,"respuestas",r.id),{status:"archived"}));
+  await b.commit();
+});
+
+const demo=[
+  ["El desapego libera","Valentina"],["Soltar también sana","Juan David"],
+  ["Nada es mío","Mariana"],["Dar sin miedo","Santiago"],
+  ["La paz adentro","Laura"],["Tener no basta","Camilo"],
+  ["Compartir es riqueza","Isabella"],["Vivir con menos","Andrés"],
+  ["Lo esencial pesa","Sofía"],["Regalar sin dolor","Emmanuel"],
+  ["Feliz sin cosas","Antonella"],["Mi calma vale","Sebastián"],
+  ["Nada me falta","Danna"],["Amar sin guardar","Miguel Ángel"]
+];
+let idx=0,timer=null;
+const autoBtn=document.getElementById("auto");
+autoBtn.addEventListener("click",()=>{
+  if(timer){ clearInterval(timer); timer=null; autoBtn.classList.remove("on"); autoBtn.textContent="Simular público"; return; }
+  autoBtn.classList.add("on"); autoBtn.textContent="Detener simulación";
+  const tick=()=>{
+    if(!isOpen) return;
+    const d=demo[idx++%demo.length];
+    addDoc(RESP,{ text:d[0], name:d[1], status:"pending", size:1+Math.floor(Math.random()*3), ts:Date.now() });
+  };
+  tick(); timer=setInterval(tick,2600);
+});
+
+function renderAll(){ renderWall(); renderPhone(); renderMod(); }
+renderAll();
+</script>
+</body>
+</html>
