@@ -101,6 +101,8 @@
   .closed{text-align:center;font-size:13px;color:var(--ink-soft);padding:20px 0;line-height:1.6}
 
   #moderacion{padding:78px 4vw 40px}
+  .gate{display:grid;place-items:center;min-height:70vh}
+  .gate[hidden]{display:none}
   .mod-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
     border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
   .mod-head h2{font-family:var(--serif);font-weight:300;font-size:24px}
@@ -196,9 +198,28 @@
 </section>
 
 <section class="view" id="moderacion">
+  <div class="gate" id="gate">
+    <div class="phone" style="border-radius:16px">
+      <div class="brand">Colombia Noviolenta</div>
+      <h2>Panel de moderación</h2>
+      <p class="note">Acceso solo para el equipo</p>
+      <label for="mail">Correo</label>
+      <input id="mail" type="email" autocomplete="username" placeholder="correo@cnv.local">
+      <label for="pass">Contraseña</label>
+      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••">
+      <button class="big" id="login">Entrar</button>
+      <p id="err" hidden style="margin-top:12px;font-size:12px;color:#c26a5a;text-align:center">
+        Correo o contraseña incorrectos.
+      </p>
+    </div>
+  </div>
+
+  <div id="modPanel" hidden>
   <div class="mod-head">
     <h2>Panel de moderación</h2>
     <div class="state" id="state">Participación abierta</div>
+    <button id="logout" style="border:1px solid var(--line);background:transparent;color:var(--ink-soft);
+      padding:7px 13px;border-radius:8px;font-size:11px;cursor:pointer;font-family:var(--sans)">Salir</button>
   </div>
   <div class="cols">
     <div class="col"><h3>Por revisar</h3><div id="pending"><p class="empty">Nada pendiente.</p></div></div>
@@ -214,6 +235,7 @@
     Las respuestas llegan de los celulares y entran aquí primero: nada se proyecta sin aprobación.
     Todo viaja por Firestore, así que la proyección puede estar en otro computador y se actualiza sola.
   </p>
+  </div>
 </section>
 
 <script type="module">
@@ -222,6 +244,8 @@ import {
   getFirestore, collection, doc, addDoc, updateDoc, setDoc, getDoc,
   onSnapshot, query, orderBy, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfHjVn6dQxjjOybX2x4W8xJNnGGcapBMM",
@@ -234,6 +258,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const auth = getAuth(app);
 const RESP = collection(db, "respuestas");
 const CONF = doc(db, "config", "estado");
 
@@ -433,6 +458,27 @@ autoBtn.addEventListener("click",()=>{
   };
   tick(); timer=setInterval(tick,2600);
 });
+
+/* ---------- login del panel ---------- */
+const gate=document.getElementById("gate"), modPanel=document.getElementById("modPanel"),
+      mail=document.getElementById("mail"), pass=document.getElementById("pass"),
+      err=document.getElementById("err"), btnLogin=document.getElementById("login");
+
+onAuthStateChanged(auth, user=>{
+  const dentro = !!user;
+  gate.hidden = dentro;
+  modPanel.hidden = !dentro;
+});
+
+async function entrar(){
+  err.hidden=true; btnLogin.disabled=true; btnLogin.textContent="Entrando…";
+  try{ await signInWithEmailAndPassword(auth, mail.value.trim(), pass.value); }
+  catch(e){ err.hidden=false; }
+  btnLogin.disabled=false; btnLogin.textContent="Entrar";
+}
+btnLogin.addEventListener("click", entrar);
+[mail,pass].forEach(el=>el.addEventListener("keydown",e=>{ if(e.key==="Enter") entrar(); }));
+document.getElementById("logout").addEventListener("click",()=>signOut(auth));
 
 function renderAll(){ renderWall(); renderPhone(); renderMod(); }
 renderAll();
