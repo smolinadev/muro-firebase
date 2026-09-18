@@ -251,17 +251,35 @@ document.querySelectorAll("[data-qr]").forEach(box=>{
   }
 });
 // si la página está publicada, muestra su propia dirección
-const host = location.hostname && location.hostname!=="localhost" ? location.host+location.pathname : null;
+const host = location.hostname && location.hostname!=="localhost"
+  ? (location.host+location.pathname).replace(/\/index\.html$/,"/").replace(/\/$/,"")
+  : null;
 if(host){ document.getElementById("url1").textContent=host; document.getElementById("url2").textContent=host; }
 
-/* ---------- vistas ---------- */
+/* ---------- vistas ----------
+   ?v=proyeccion  → pantalla del proyector
+   (sin nada)     → celular del público, la del QR
+   ?v=mod         → panel de moderación
+   ?demo=1        → muestra el selector para presentar las tres
+------------------------------- */
+const params=new URLSearchParams(location.search);
 const sw=document.getElementById("switch");
+const VIEWS={proyeccion:"proyeccion",pantalla:"proyeccion",celular:"celular",mod:"moderacion",moderacion:"moderacion"};
+const inicial=VIEWS[(params.get("v")||"").toLowerCase()] || "celular";
+const esDemo=params.get("demo")==="1";
+
+function mostrar(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id===id));
+  sw.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.v===id));
+}
+mostrar(inicial);
+if(!esDemo){
+  sw.classList.add("hidden");
+  if(inicial!=="moderacion") document.getElementById("conn").classList.add("hidden");
+}
 sw.addEventListener("click",e=>{
   const b=e.target.closest("button[data-v]"); if(!b) return;
-  sw.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");
-  document.querySelectorAll(".view").forEach(v=>v.classList.remove("on"));
-  document.getElementById(b.dataset.v).classList.add("on");
+  mostrar(b.dataset.v);
 });
 document.addEventListener("keydown",e=>{
   if((e.key==="h"||e.key==="H")&&!/input/i.test(document.activeElement.tagName)){
