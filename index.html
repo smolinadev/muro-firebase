@@ -64,17 +64,14 @@
   .foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
     border-top:1px solid var(--line);padding-top:2.2vh;opacity:0;transition:opacity .8s}
   .foot.show{opacity:1}
-  .foot .qr{width:clamp(52px,4.6vw,72px)}
+  .foot .qr{width:clamp(110px,9vw,150px)}
   .qr-hint{display:flex;align-items:center;gap:14px}
   .qr-text{font-size:clamp(11px,1vw,14px);line-height:1.5;color:var(--ink-soft)}
   .qr-text b{display:block;color:var(--ink);font-weight:500}
   .count{text-align:right}
   .count b{font-family:var(--serif);font-weight:400;display:block;font-size:clamp(24px,3vw,44px);line-height:1;color:var(--gold)}
   .count span{font-size:clamp(9px,.82vw,12px);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
-  .qr{aspect-ratio:1;flex:none;border-radius:8px;background:var(--ink);padding:5%;
-    display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);gap:3%}
-  .qr i{background:transparent;border-radius:1px}
-  .qr i.on{background:var(--bg)}
+  .qr{aspect-ratio:1;flex:none}
 
   #celular{display:none;place-items:center;padding:80px 20px 40px;min-height:100vh}
   #celular.on{display:grid}
@@ -265,15 +262,13 @@ const CONF = doc(db, "config", "estado");
 const MAX_EN_PANTALLA = 14;
 let all = [], isOpen = true;
 
-/* ---------- QR decorativo ---------- */
-const pat = "110101110010110011101001101110101001110010110111001011001110100111010110";
+/* ---------- QR real ---------- */
 document.querySelectorAll("[data-qr]").forEach(box=>{
-  for(let i=0;i<81;i++){
-    const c=document.createElement("i");
-    const corner=(i<3||(i>8&&i<12)||(i>17&&i<21))||(i%9>5&&i<27)||(i>53&&i%9<3);
-    if(pat[i%pat.length]==="1"||corner) c.className="on";
-    box.appendChild(c);
-  }
+  const img=document.createElement("img");
+  img.src="qr-muro.png";
+  img.alt="Código QR para participar";
+  img.style.cssText="width:100%;height:100%;display:block";
+  box.appendChild(img);
 });
 // si la página está publicada, muestra su propia dirección
 const host = location.hostname && location.hostname!=="localhost"
