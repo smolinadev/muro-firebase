@@ -260,6 +260,10 @@ const RESP = collection(db, "respuestas");
 const CONF = doc(db, "config", "estado");
 
 const MAX_EN_PANTALLA = 14;
+/* true  = las respuestas esperan aprobación en el panel de moderación
+   false = van directo a la pantalla (el panel sigue sirviendo para quitarlas) */
+const MODERAR = false;
+const ESTADO_INICIAL = MODERAR ? "pending" : "live";
 let all = [], isOpen = true;
 
 /* ---------- QR real ---------- */
@@ -366,7 +370,7 @@ pSend.addEventListener("click",async()=>{
   if(words(t).length>3){ pCount.classList.add("bad"); pWord.focus(); return; }
   pSend.disabled=true; pSend.textContent="Enviando…";
   try{
-    await addDoc(RESP,{ text:t, name:n, status:"pending", size:1+Math.floor(Math.random()*3), ts:Date.now() });
+    await addDoc(RESP,{ text:t, name:n, status:ESTADO_INICIAL, size:1+Math.floor(Math.random()*3), ts:Date.now() });
     pWord.value=""; pName.value=""; pCount.textContent="0 palabras";
     form.hidden=true; sentBox.hidden=false;
   }catch(e){ alert("No se pudo enviar. Revisa la conexión."); console.error(e); }
@@ -449,7 +453,7 @@ autoBtn.addEventListener("click",()=>{
   const tick=()=>{
     if(!isOpen) return;
     const d=demo[idx++%demo.length];
-    addDoc(RESP,{ text:d[0], name:d[1], status:"pending", size:1+Math.floor(Math.random()*3), ts:Date.now() });
+    addDoc(RESP,{ text:d[0], name:d[1], status:ESTADO_INICIAL, size:1+Math.floor(Math.random()*3), ts:Date.now() });
   };
   tick(); timer=setInterval(tick,2600);
 });
