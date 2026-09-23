@@ -61,8 +61,12 @@ function llevar(destino){
 
 try{
   const db = getFirestore(initializeApp(firebaseConfig));
+  /* config/qr guarda varios destinos y "activo" dice cuál usar, p. ej.
+     { activo:"muro", registro:"https://…", muro:"https://…", encuesta:"https://…" }
+     Si no hay "activo", usa el campo "destino" de antes. */
   const snap = await getDoc(doc(db, "config", "qr"));
-  llevar(snap.exists() ? (snap.data().destino || RESPALDO) : RESPALDO);
+  const d = snap.exists() ? snap.data() : {};
+  llevar((d.activo && d[d.activo]) || d.destino || RESPALDO);
 }catch(e){
   llevar(RESPALDO);
 }
