@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muro de Memoria — Colombia Noviolenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- rutas absolutas: la página se abre como /memoria (sin barra final) -->
+<link rel="stylesheet" href="/memoria/memoria.css">
+</head>
+<body>
+
+<!-- ============ PROYECCIÓN  (?v=proyeccion) ============ -->
+<section class="vista" id="proyeccion" hidden>
+  <div id="escena" class="vacio">
+    <div id="brasas"></div>
+
+    <!-- pantalla vacía: antes de la primera lápida -->
+    <div class="espera">
+      <div class="espera-texto">
+        <div class="kicker">En memoria</div>
+        <h1>Un nombre que no queremos olvidar</h1>
+        <p class="bajada">Cada vela de esta noche espera un nombre. Enciende la de tu ser querido.</p>
+        <div class="pasos">
+          <div class="paso"><b>1</b><i></i><span>Escanea el código con la cámara de tu celular</span></div>
+          <div class="paso"><b>2</b><i></i><span>Escribe su nombre y lo que hoy le dirías</span></div>
+          <div class="paso"><b>3</b><i></i><span>Mira su vela encenderse en esta pantalla</span></div>
+        </div>
+      </div>
+      <div class="espera-qr">
+        <div class="qr-grande" data-qr="232"></div>
+        <div class="escanea">Escanea aquí</div>
+        <div class="url" data-url></div>
+      </div>
+      <div class="niebla"></div>
+      <div class="velas" id="velas"></div>
+    </div>
+
+    <!-- campo de lápidas -->
+    <div class="campo">
+      <div class="campo-titulo">
+        <div class="kicker">En memoria</div>
+        <h2>Un nombre que no queremos olvidar</h2>
+        <p>Escanea y escribe qué le dirías hoy</p>
+      </div>
+      <div class="contador"><b id="contador">0</b><span>nombres encendidos</span></div>
+      <div class="campo-qr"><div class="qr-chico" data-qr="92"></div><div class="url" data-url></div></div>
+      <div id="lapidas"></div>
+    </div>
+
+    <div class="suelo"></div>
+    <div class="firma">Colombia Noviolenta</div>
+  </div>
+</section>
+
+<!-- ============ CELULAR  (sin ?v, la del QR) ============ -->
+<section class="vista cel" id="celular" hidden>
+  <div id="formulario">
+    <header class="cel-cabeza">
+      <div class="vela-chica"><div class="halo"></div><div class="llama"></div></div>
+      <div class="kicker">En memoria</div>
+      <h1>Enciende una vela por tu ser querido</h1>
+      <p>Su nombre aparecerá en la pantalla, junto a los de todos.</p>
+    </header>
+
+    <label class="campo-form">
+      <span class="etiqueta">Su nombre</span>
+      <input id="fNombre" maxlength="40" autocomplete="off" placeholder="Como lo recuerdas">
+    </label>
+
+    <div class="campo-form">
+      <span class="etiqueta">Años <em>opcional</em></span>
+      <div class="dos">
+        <label class="anio"><input id="fNacio" inputmode="numeric" maxlength="4" placeholder="1950"><small>nació</small></label>
+        <label class="anio"><input id="fPartio" inputmode="numeric" maxlength="4" placeholder="2020"><small>partió</small></label>
+      </div>
+    </div>
+
+    <label class="campo-form">
+      <span class="etiqueta">¿Qué le dirías hoy?</span>
+      <textarea id="fMensaje" maxlength="90" rows="3" placeholder="Lo que quieras decirle"></textarea>
+      <small class="cuenta" id="fCuenta">0 / 90</small>
+    </label>
+
+    <label class="campo-form">
+      <span class="etiqueta">De parte de <em>opcional</em></span>
+      <input id="fDe" maxlength="30" autocomplete="off" placeholder="Tu nombre">
+    </label>
+
+    <p class="error" id="fError" hidden></p>
+    <button class="boton" id="fEnviar">
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true"><path d="M8 1.5C8 1.5 12.5 6 12.5 9.2C12.5 11.7 10.5 13.5 8 13.5C5.5 13.5 3.5 11.7 3.5 9.2C3.5 6 8 1.5 8 1.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 13.5V18.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>Encender su vela</span>
+    </button>
+    <p class="pie">Colombia Noviolenta · Concierto conferencia</p>
+  </div>
+
+  <div id="encendida" class="encendida" hidden>
+    <div class="vela-grande"><div class="halo"></div><div class="llama"></div></div>
+    <div class="sube">
+      <div class="kicker">Vela encendida</div>
+      <h1>La luz de <span id="eNombre"></span> ya está en la pantalla</h1>
+      <p class="bajada" id="eBajada">Levanta la mirada. Esta noche la recordamos contigo.</p>
+    </div>
+    <div class="sube tarde">
+      <button class="boton borde" id="eOtra">Encender otra vela</button>
+      <p class="pie">Colombia Noviolenta · Concierto conferencia</p>
+    </div>
+  </div>
+
+  <div id="cerrado" class="cerrado" hidden>
+    <div class="kicker">En memoria</div>
+    <h1>Por ahora no se reciben más nombres</h1>
+    <p>Gracias por encender tu vela esta noche.</p>
+  </div>
+</section>
+
+<!-- ============ MODERACIÓN  (?v=mod) ============ -->
+<section class="vista cel" id="mod" hidden>
+  <div id="mGate" class="gate">
+    <div class="kicker">Muro de memoria</div>
+    <h1>Acceso del equipo</h1>
+    <label class="campo-form"><span class="etiqueta">Correo</span><input id="mMail" type="email" autocomplete="username"></label>
+    <label class="campo-form"><span class="etiqueta">Contraseña</span><input id="mPass" type="password" autocomplete="current-password"></label>
+    <p class="error" id="mError" hidden>Correo o contraseña incorrectos.</p>
+    <button class="boton" id="mEntrar">Entrar</button>
+  </div>
+  <div id="mPanel" hidden>
+    <div class="m-cabeza">
+      <h1>Muro de memoria</h1>
+      <button class="mini" id="mSalir">Salir</button>
+    </div>
+    <p class="m-estado" id="mEstado"></p>
+    <div class="m-botones">
+      <button class="boton borde" id="mAbrir">Cerrar participación</button>
+    </div>
+    <h3 id="mTituloPend" hidden>Por revisar</h3>
+    <div id="mPendientes"></div>
+    <h3>En pantalla</h3>
+    <div id="mLista"><p class="vacio-txt">Aún no hay nombres.</p></div>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module" src="/memoria/memoria.js"></script>
+</body>
+</html>
