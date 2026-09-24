@@ -61,13 +61,9 @@ if (vista === "proyeccion") {
   };
   addEventListener("resize", encajar); encajar();
 
-  // QR fijo de este muro, apuntando a /memoria del mismo sitio
+  // dirección que se muestra debajo del QR (la imagen qr-memoria.png apunta a /memoria)
   const url = location.origin + "/memoria";
   document.querySelectorAll("[data-url]").forEach(el => el.textContent = url.replace(/^https?:\/\//, ""));
-  document.querySelectorAll("[data-qr]").forEach(el => {
-    const px = +el.dataset.qr * 2;
-    if (window.QRCode) new QRCode(el, { text: url, width: px, height: px, colorDark: "#1a1a20", colorLight: "#efe6d4", correctLevel: QRCode.CorrectLevel.M });
-  });
 
   // brasas que suben
   [110, 240, 380, 520, 640, 780, 900, 1030, 1160].forEach((x, i) => {

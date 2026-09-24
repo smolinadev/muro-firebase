@@ -65,8 +65,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .paso i{width:30px;height:1px;background:rgba(224,169,85,.5)}
 .paso span{font-size:14px;line-height:1.45;color:#d8ccb4}
 .espera-qr{position:absolute;right:96px;top:104px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.qr-grande{width:232px;height:232px;border-radius:18px;background:var(--tinta);padding:18px;margin-bottom:10px;animation:breathe 3.4s ease-in-out infinite}
-.qr-grande img,.qr-grande canvas,.qr-chico img,.qr-chico canvas{width:100%!important;height:100%!important;display:block}
+.qr-grande{width:232px;height:232px;border-radius:18px;display:block;margin-bottom:10px;animation:breathe 3.4s ease-in-out infinite}
 .escanea{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--oro)}
 .velas{position:absolute;left:50px;right:50px;bottom:54px;display:flex;justify-content:space-between;align-items:flex-end}
 .vela-fila{position:relative;border-radius:3px 3px 2px 2px}
@@ -85,7 +84,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .contador span{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#a79c86}
 .campo-qr{position:absolute;right:34px;top:34px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .campo-qr .url{font-size:11px}
-.qr-chico{width:92px;height:92px;border-radius:10px;background:var(--tinta);padding:7px}
+.qr-chico{width:92px;height:92px;border-radius:10px;display:block}
 #lapidas{position:absolute;inset:0}
 
 /* cada lápida se dibuja a tamaño "de adelante" y se escala según su fila;
