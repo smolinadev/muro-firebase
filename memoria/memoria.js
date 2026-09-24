@@ -34,7 +34,8 @@ let todas = [], abierto = true;
    ?v=proyeccion  → pantalla del proyector
    ?v=mod         → panel del equipo
 ------------------------------- */
-const v = (new URLSearchParams(location.search).get("v") || "").toLowerCase();
+const params = new URLSearchParams(location.search);
+const v = (params.get("v") || "").toLowerCase();
 const vista = { proyeccion: "proyeccion", pantalla: "proyeccion", mod: "mod", moderacion: "mod" }[v] || "celular";
 $(vista).hidden = false;
 
@@ -60,6 +61,13 @@ if (vista === "proyeccion") {
     escena.style.transform = `scale(${k}) translate(-640px,-360px)`;
   };
   addEventListener("resize", encajar); encajar();
+
+  // abierta desde el celular (botón "Ver el muro"): botón de volver y aviso de girar
+  if (params.get("cel") === "1") {
+    $("volver").hidden = false;
+    const girar = () => { $("girar").hidden = innerWidth > innerHeight; };
+    addEventListener("resize", girar); girar();
+  }
 
   // dirección que se muestra debajo del QR (la imagen qr-memoria.png apunta a /memoria)
   const url = location.origin + "/memoria";
@@ -91,10 +99,18 @@ const FILAS = [
   { cx: [520, 720, 330, 905, 150, 1085],       y: 345, s: .52, o: .55, z: 10, lejos: true  },
 ];
 const GIROS = [-2.2, 1.4, -.8, 2, -1.6, .9];
-const PUESTOS = FILAS.flatMap((f, fi) => f.cx.map((cx, i) => ({
+const armarPuestos = filas => filas.flatMap((f, fi) => f.cx.map((cx, i) => ({
   x: cx + [-8, 12, -6, 10, -4, 8][i] - 92, y: f.y + ((i * 13) % 17) - 8, s: f.s, o: f.o, z: f.z, lejos: f.lejos,
   r: GIROS[(i + fi) % GIROS.length],
 })));
+
+/* Visto desde el celular de quien acaba de enviar (&id=...): su lápida va sola
+   al centro de la fila de adelante (sin giro) y las demás se reparten alrededor. */
+const MIA = params.get("id");
+const PUESTOS = armarPuestos(MIA
+  ? [{ ...FILAS[0], cx: [640, 330, 950] }, FILAS[1], FILAS[2]]
+  : FILAS);
+if (MIA) PUESTOS[0].x = 640 - 92, PUESTOS[0].r = 0;
 const enPantalla = new Map();   // id -> elemento
 let primeraVez = true;
 
@@ -111,6 +127,7 @@ function crearLapida(r) {
   q(".de").textContent = r.de ? "de " + r.de : "";
   q(".de").hidden = !r.de;
   q(".llama").style.animationDelay = (Math.random() * 1.6).toFixed(2) + "s";
+  if (r.id === MIA) el.classList.add("mia");
   return el;
 }
 const colocar = (el, p, extraY = 0) => {
@@ -124,7 +141,10 @@ function pintarCampo() {
   $("contador").textContent = todas.filter(r => r.status === "live" || r.status === "archived").length;
   $("escena").classList.toggle("vacio", vivas.length === 0);
 
-  const visibles = vivas.slice(-PUESTOS.length).reverse();   // la más nueva primero
+  let visibles = vivas.slice().reverse();                     // la más nueva primero
+  const mia = visibles.find(r => r.id === MIA);
+  if (mia) visibles = [mia, ...visibles.filter(r => r !== mia)]; // la suya siempre en el puesto 0
+  visibles = visibles.slice(0, PUESTOS.length);
   const ids = new Set(visibles.map(r => r.id));
 
   // las que ya no caben (o se quitaron) se desvanecen
@@ -133,7 +153,7 @@ function pintarCampo() {
     setTimeout(() => el.remove(), 1700);
   }
   // con 4 o menos, la fila de adelante se centra en vez de cargarse a un lado
-  const pocas = visibles.length <= 4;
+  const pocas = visibles.length <= 4 && !MIA;
   visibles.forEach((r, i) => {
     const p = pocas
       ? { ...PUESTOS[i], x: 640 + (visibles.length - 1 - i - (visibles.length - 1) / 2) * 300 - 92 }
@@ -142,12 +162,13 @@ function pintarCampo() {
     if (!el) {
       // nace abajo e invisible, y sube a su puesto
       el = crearLapida(r);
-      colocar(el, p, primeraVez ? 0 : 90);
+      const entra = !primeraVez || r.id === MIA;   // la suya entra con animación aunque sea la primera carga
+      colocar(el, p, entra ? 90 : 0);
       el.style.opacity = 0;
       $("lapidas").appendChild(el);
       enPantalla.set(r.id, el);
       el.getBoundingClientRect();
-      if (!primeraVez) { el.classList.add("nueva"); setTimeout(() => el.classList.remove("nueva"), 7000); }
+      if (entra) { el.classList.add("nueva"); setTimeout(() => el.classList.remove("nueva"), 7000); }
     }
     colocar(el, p);
     el.style.opacity = p.o;
@@ -182,7 +203,9 @@ if (vista === "celular") {
     error("");
     $("fEnviar").disabled = true;
     try {
-      await addDoc(MEM, { ...d, status: ESTADO_INICIAL, ts: Date.now() });
+      const ref = await addDoc(MEM, { ...d, status: ESTADO_INICIAL, ts: Date.now() });
+      // sin moderación, pasa directo a ver el muro con su lápida al centro
+      if (!MODERAR) { location.href = `/memoria?v=proyeccion&cel=1&id=${ref.id}`; return; }
       $("eNombre").textContent = d.nombre;
       $("eBajada").textContent = MODERAR
         ? "En unos momentos aparecerá en la pantalla. Esta noche la recordamos contigo."

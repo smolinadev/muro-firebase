@@ -104,7 +104,13 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .piedra .linea,.piedra .mensaje,.piedra .de{transition:opacity 1.2s ease}
 .lapida.lejos .linea,.lapida.lejos .mensaje,.lapida.lejos .de{opacity:0}
 .lapida .vela{position:relative;margin-top:-5px;width:20px;height:42px;border-radius:3px 3px 2px 2px}
-.lapida.nueva .piedra{box-shadow:inset 0 2px 0 rgba(255,255,255,.1),inset 0 -18px 30px rgba(0,0,0,.4),0 0 60px rgba(224,169,85,.25),0 18px 36px rgba(0,0,0,.6)}
+.lapida.nueva .piedra,.lapida.mia .piedra{box-shadow:inset 0 2px 0 rgba(255,255,255,.1),inset 0 -18px 30px rgba(0,0,0,.4),0 0 60px rgba(224,169,85,.25),0 18px 36px rgba(0,0,0,.6)}
+
+/* visto desde el celular */
+.volver{position:absolute;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;padding:9px 14px;border-radius:10px;
+  background:rgba(7,8,12,.75);border:1px solid rgba(224,169,85,.4);color:var(--tinta);font:500 14px var(--sans);text-decoration:none}
+.girar{position:absolute;left:0;right:0;top:calc(24px + env(safe-area-inset-top,0px));z-index:50;text-align:center;
+  font-size:13px;color:var(--apagado);padding:0 20px}
 
 /* ================= CELULAR y MODERACIÓN ================= */
 .cel{min-height:100%;display:flex;justify-content:center;
