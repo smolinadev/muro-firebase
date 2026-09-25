@@ -56,18 +56,32 @@ const fechas = r => [r.nacio, r.partio].filter(Boolean).join(" · ");
 /* ================= PROYECCIÓN ================= */
 if (vista === "proyeccion") {
   const escena = $("escena");
+  let formaActual = 0;
+  /* En el proyector (o celular acostado) el escenario es 1280x720.
+     En un celular vertical (&cel=1) pasa a un escenario angosto de 420 de ancho
+     con la altura que tenga la pantalla, y las lápidas se reacomodan. */
   const encajar = () => {
-    const k = Math.min(innerWidth / 1280, innerHeight / 720);
-    escena.style.transform = `scale(${k}) translate(-640px,-360px)`;
+    const vertical = params.get("cel") === "1" && innerHeight > innerWidth;
+    let W = 1280, H = 720, k;
+    if (vertical) {
+      W = 420; k = innerWidth / W; H = innerHeight / k;
+      if (H < 720) { H = 720; k = innerHeight / H; }
+    } else k = Math.min(innerWidth / W, innerHeight / H);
+    escena.style.width = W + "px"; escena.style.height = H + "px";
+    escena.style.transform = `scale(${k}) translate(${-W / 2}px,${-H / 2}px)`;
+    const forma = vertical ? Math.round(H) : 0;   // se reacomoda si cambia la orientación o el alto
+    if (forma !== formaActual) {
+      formaActual = forma;
+      $("proyeccion").classList.toggle("vertical", vertical);
+      PUESTOS = calcPuestos(vertical, H);
+      pintarCampo();
+    }
   };
-  addEventListener("resize", encajar); encajar();
+  addEventListener("resize", encajar);
+  setTimeout(encajar);   // después de definir PUESTOS y pintarCampo (más abajo)
 
-  // abierta desde el celular (botón "Ver el muro"): botón de volver y aviso de girar
-  if (params.get("cel") === "1") {
-    $("volver").hidden = false;
-    const girar = () => { $("girar").hidden = innerWidth > innerHeight; };
-    addEventListener("resize", girar); girar();
-  }
+  // abierta desde el celular: botón de volver
+  if (params.get("cel") === "1") $("volver").hidden = false;
 
   // dirección que se muestra debajo del QR (la imagen qr-memoria.png apunta a /memoria)
   const url = location.origin + "/memoria";
@@ -107,10 +121,28 @@ const armarPuestos = filas => filas.flatMap((f, fi) => f.cx.map((cx, i) => ({
 /* Visto desde el celular de quien acaba de enviar (&id=...): su lápida va sola
    al centro de la fila de adelante (sin giro) y las demás se reparten alrededor. */
 const MIA = params.get("id");
-const PUESTOS = armarPuestos(MIA
-  ? [{ ...FILAS[0], cx: [640, 330, 950] }, FILAS[1], FILAS[2]]
-  : FILAS);
-if (MIA) PUESTOS[0].x = 640 - 92, PUESTOS[0].r = 0;
+/* celular vertical (420 de ancho, alto variable): la suya grande adelante, 2 en el medio
+   y 3 atrás, las de atrás solo con el nombre. Medido para 780 de alto; en pantallas
+   más altas o más bajas las filas de atrás suben o bajan en proporción. */
+const FILAS_VERTICAL = [
+  { cx: [210],           y: 100, s: 1.2, o: 1,   z: 30, lejos: false },
+  { cx: [100, 320],      y: 370, s: .62, o: .8,  z: 20, lejos: true  },
+  { cx: [210, 55, 365],  y: 510, s: .42, o: .55, z: 10, lejos: true  },
+];
+function calcPuestos(vertical, H) {
+  if (vertical) {
+    const f = H / 780;
+    const p = armarPuestos(FILAS_VERTICAL.map((fila, i) => i ? { ...fila, y: fila.y * f } : fila));
+    p[0].x = 210 - 92; p[0].y = 100; p[0].r = 0;
+    return p;
+  }
+  const p = armarPuestos(MIA
+    ? [{ ...FILAS[0], cx: [640, 330, 950] }, FILAS[1], FILAS[2]]
+    : FILAS);
+  if (MIA) p[0].x = 640 - 92, p[0].r = 0;
+  return p;
+}
+let PUESTOS = calcPuestos(false);
 const enPantalla = new Map();   // id -> elemento
 let primeraVez = true;
 
