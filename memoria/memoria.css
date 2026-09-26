@@ -91,18 +91,19 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
    al llegar una nueva, todas se deslizan a su nuevo puesto */
 .lapida{position:absolute;left:0;bottom:0;width:184px;display:flex;flex-direction:column;align-items:center;
   transform-origin:50% 100%;transition:transform 1.6s cubic-bezier(.2,.8,.2,1),opacity 1.6s ease;will-change:transform}
-.piedra{width:184px;min-height:226px;padding:34px 18px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
+.piedra{width:184px;min-height:226px;padding:34px 14px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;
   border-radius:50% 50% 7px 7px/34% 34% 7px 7px;
   background:linear-gradient(170deg,var(--piedra1) 0%,var(--piedra2) 55%,var(--piedra3) 100%);
   box-shadow:inset 0 2px 0 rgba(255,255,255,.06),inset 0 -18px 30px rgba(0,0,0,.45),0 18px 36px rgba(0,0,0,.6)}
 .piedra .nombre{font-family:var(--serif);font-size:22px;line-height:1.15;color:var(--tinta);overflow-wrap:anywhere;
   text-shadow:0 -1px 0 rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.08)}
-.piedra .fechas{font-size:11px;letter-spacing:.2em;color:#a79c86}
-.piedra .linea{width:26px;height:1px;background:rgba(224,169,85,.45)}
-.piedra .mensaje{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.35;color:#d8ccb4;text-wrap:pretty;overflow-wrap:anywhere}
-.piedra .de{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8d836f}
-.piedra .linea,.piedra .mensaje,.piedra .de{transition:opacity 1.2s ease}
-.lapida.lejos .linea,.lapida.lejos .mensaje,.lapida.lejos .de{opacity:0}
+.piedra .linea{width:26px;height:1px;background:rgba(224,169,85,.45);margin:4px 0 2px}
+/* "15 MAY 1990 — ?" : el día en que naciste, un guion y un interrogante grande */
+.piedra .fechas{display:flex;align-items:center;justify-content:center;gap:9px}
+.piedra .nac{font-size:13px;font-weight:500;letter-spacing:.14em;white-space:nowrap;color:#c4b89e}
+.piedra .guion{width:18px;height:2px;border-radius:1px;background:#8d836f;flex:none}
+.piedra .interrogante{font-family:var(--serif);font-size:46px;line-height:.9;color:var(--oro);
+  text-shadow:0 0 18px rgba(224,169,85,.45),0 -1px 0 rgba(0,0,0,.6)}
 .lapida .vela{position:relative;margin-top:-5px;width:20px;height:42px;border-radius:3px 3px 2px 2px}
 .lapida.nueva .piedra,.lapida.mia .piedra{box-shadow:inset 0 2px 0 rgba(255,255,255,.1),inset 0 -18px 30px rgba(0,0,0,.4),0 0 60px rgba(224,169,85,.25),0 18px 36px rgba(0,0,0,.6)}
 
@@ -147,11 +148,21 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .cel input::placeholder,.cel textarea::placeholder{color:var(--tenue)}
 #fNombre{font-family:var(--serif);font-size:20px}
 .cel textarea{height:auto;min-height:104px;padding:14px 16px;resize:none;font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.4}
-.dos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.anio{position:relative}
-.anio small{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--tenue);pointer-events:none}
-.cuenta{align-self:flex-end;font-size:11px;color:var(--tenue)}
-.cuenta.lleno{color:var(--oro)}
+.fecha{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr) minmax(0,1fr);gap:10px}
+.parte{position:relative}
+.parte input{padding-right:34px}
+.cel select{width:100%;height:52px;border-radius:12px;border:1px solid rgba(224,169,85,.22);background:rgba(244,232,208,.05);
+  color:var(--tinta);font-family:var(--sans);font-size:16px;padding:0 12px;outline:none;appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--oro) 50%),linear-gradient(135deg,var(--oro) 50%,transparent 50%);
+  background-position:calc(100% - 17px) 23px,calc(100% - 12px) 23px;background-size:5px 5px;background-repeat:no-repeat}
+.cel select:focus{border-color:rgba(224,169,85,.7)}
+.cel select:invalid,.cel select option[value=""]{color:var(--tenue)}
+.cel select option{color:#111}
+.parte small{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--tenue);pointer-events:none}
+/* vista previa de la lápida en el celular */
+.previa{align-self:center;margin:6px 0 2px}
+.previa .piedra{width:210px;min-height:190px}
+.previa.sin-nombre .nombre{color:var(--tenue);font-style:italic}
 .error{font-size:13px;color:#e08a78;text-align:center}
 .boton{height:56px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
   background:linear-gradient(180deg,#e8b565 0%,var(--oro2) 100%);box-shadow:0 10px 30px rgba(224,169,85,.25);

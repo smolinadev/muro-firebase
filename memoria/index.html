@@ -20,13 +20,13 @@
     <!-- pantalla vacía: antes de la primera lápida -->
     <div class="espera">
       <div class="espera-texto">
-        <div class="kicker">En memoria</div>
-        <h1>Un nombre que no queremos olvidar</h1>
-        <p class="bajada">Cada vela de esta noche espera un nombre. Enciende la de tu ser querido.</p>
+        <div class="kicker">Nadie sabe el día ni la hora</div>
+        <h1>¿Y si esta fuera tu lápida?</h1>
+        <p class="bajada">Escribe tu nombre y el día en que naciste. La otra fecha nadie la conoce.</p>
         <div class="pasos">
           <div class="paso"><b>1</b><i></i><span>Escanea el código con la cámara de tu celular</span></div>
-          <div class="paso"><b>2</b><i></i><span>Escribe su nombre y lo que hoy le dirías</span></div>
-          <div class="paso"><b>3</b><i></i><span>Mira su vela encenderse en esta pantalla</span></div>
+          <div class="paso"><b>2</b><i></i><span>Escribe tu nombre completo y tu fecha de nacimiento</span></div>
+          <div class="paso"><b>3</b><i></i><span>Mira tu lápida aparecer en esta pantalla</span></div>
         </div>
       </div>
       <div class="espera-qr">
@@ -41,11 +41,11 @@
     <!-- campo de lápidas -->
     <div class="campo">
       <div class="campo-titulo">
-        <div class="kicker">En memoria</div>
-        <h2>Un nombre que no queremos olvidar</h2>
-        <p>Escanea y escribe qué le dirías hoy</p>
+        <div class="kicker">Nadie sabe el día ni la hora</div>
+        <h2>¿Y si esta fuera tu lápida?</h2>
+        <p>Escanea y pon la tuya</p>
       </div>
-      <div class="contador"><b id="contador">0</b><span>nombres encendidos</span></div>
+      <div class="contador"><b id="contador">0</b><span>lápidas en el muro</span></div>
       <div class="campo-qr"><img class="qr-chico" src="/memoria/qr-memoria.png" alt="Código QR para participar"><div class="url" data-url></div></div>
       <div id="lapidas"></div>
     </div>
@@ -54,7 +54,7 @@
     <div class="firma">Colombia Noviolenta</div>
   </div>
   <!-- solo cuando se abre desde el celular (&cel=1) -->
-  <a class="volver" id="volver" href="/memoria" hidden>← Encender otra vela</a>
+  <a class="volver" id="volver" href="/memoria" hidden>← Hacer otra lápida</a>
 </section>
 
 <!-- ============ CELULAR  (sin ?v, la del QR) ============ -->
@@ -62,39 +62,38 @@
   <div id="formulario">
     <header class="cel-cabeza">
       <div class="vela-chica"><div class="halo"></div><div class="llama"></div></div>
-      <div class="kicker">En memoria</div>
-      <h1>Enciende una vela por tu ser querido</h1>
-      <p>Su nombre aparecerá en la pantalla, junto a los de todos.</p>
+      <div class="kicker">Tu lápida</div>
+      <h1>Nadie sabe el día ni la hora</h1>
+      <p>Escribe tu nombre completo y la fecha en que naciste. La otra fecha nadie la conoce.</p>
     </header>
 
     <label class="campo-form">
-      <span class="etiqueta">Su nombre</span>
-      <input id="fNombre" maxlength="40" autocomplete="off" placeholder="Como lo recuerdas">
+      <span class="etiqueta">Tu nombre completo</span>
+      <input id="fNombre" maxlength="40" autocomplete="name" placeholder="Nombre y apellidos">
     </label>
 
     <div class="campo-form">
-      <span class="etiqueta">Años <em>opcional</em></span>
-      <div class="dos">
-        <label class="anio"><input id="fNacio" inputmode="numeric" maxlength="4" placeholder="1950"><small>nació</small></label>
-        <label class="anio"><input id="fPartio" inputmode="numeric" maxlength="4" placeholder="2020"><small>partió</small></label>
+      <span class="etiqueta">Naciste el</span>
+      <div class="fecha">
+        <label class="parte"><input id="fDia" inputmode="numeric" maxlength="2" placeholder="15"><small>día</small></label>
+        <label class="parte"><select id="fMes" required>
+          <option value="" disabled selected>Mes</option>
+          <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+          <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+          <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select></label>
+        <label class="parte"><input id="fAnio" inputmode="numeric" maxlength="4" placeholder="1990"><small>año</small></label>
       </div>
     </div>
 
-    <label class="campo-form">
-      <span class="etiqueta">¿Qué le dirías hoy?</span>
-      <textarea id="fMensaje" maxlength="90" rows="3" placeholder="Lo que quieras decirle"></textarea>
-      <small class="cuenta" id="fCuenta">0 / 90</small>
-    </label>
-
-    <label class="campo-form">
-      <span class="etiqueta">De parte de <em>opcional</em></span>
-      <input id="fDe" maxlength="30" autocomplete="off" placeholder="Tu nombre">
-    </label>
+    <!-- así se verá en la pantalla; se actualiza mientras escribe -->
+    <div class="previa" id="fPrevia"></div>
 
     <p class="error" id="fError" hidden></p>
     <button class="boton" id="fEnviar">
       <svg width="16" height="20" viewBox="0 0 16 20" fill="none" aria-hidden="true"><path d="M8 1.5C8 1.5 12.5 6 12.5 9.2C12.5 11.7 10.5 13.5 8 13.5C5.5 13.5 3.5 11.7 3.5 9.2C3.5 6 8 1.5 8 1.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 13.5V18.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      <span>Encender su vela</span>
+      <span>Poner mi lápida</span>
     </button>
     <p class="pie">Colombia Noviolenta · Concierto conferencia</p>
   </div>
@@ -102,20 +101,20 @@
   <div id="encendida" class="encendida" hidden>
     <div class="vela-grande"><div class="halo"></div><div class="llama"></div></div>
     <div class="sube">
-      <div class="kicker">Vela encendida</div>
-      <h1>La luz de <span id="eNombre"></span> ya está en la pantalla</h1>
-      <p class="bajada" id="eBajada">Levanta la mirada. Esta noche la recordamos contigo.</p>
+      <div class="kicker">Tu lápida</div>
+      <h1><span id="eNombre"></span>, tu lápida ya está en el muro</h1>
+      <p class="bajada" id="eBajada">Levanta la mirada. Nadie sabe el día ni la hora.</p>
     </div>
     <div class="sube tarde">
-      <button class="boton borde" id="eOtra">Encender otra vela</button>
+      <button class="boton borde" id="eOtra">Hacer otra lápida</button>
       <p class="pie">Colombia Noviolenta · Concierto conferencia</p>
     </div>
   </div>
 
   <div id="cerrado" class="cerrado" hidden>
-    <div class="kicker">En memoria</div>
-    <h1>Por ahora no se reciben más nombres</h1>
-    <p>Gracias por encender tu vela esta noche.</p>
+    <div class="kicker">Nadie sabe el día ni la hora</div>
+    <h1>Por ahora no se reciben más lápidas</h1>
+    <p>Gracias por estar aquí esta noche.</p>
   </div>
 </section>
 

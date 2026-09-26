@@ -51,7 +51,10 @@ onSnapshot(CONF, s => {
   if (vista === "mod") pintarMod();
 });
 
-const fechas = r => [r.nacio, r.partio].filter(Boolean).join(" · ");
+/* La lápida es de quien la escribe: su nombre, el día en que nació, un guion y un "?"
+   (nadie sabe cuándo va a morir). Se guarda dia, mes y nacio (año); partio queda vacío. */
+const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+const fechaNac = r => [r.dia && +r.dia, r.mes && MESES[+r.mes - 1], r.nacio].filter(Boolean).join(" ");
 
 /* ================= PROYECCIÓN ================= */
 if (vista === "proyeccion") {
@@ -73,6 +76,7 @@ if (vista === "proyeccion") {
     if (forma !== formaActual) {
       formaActual = forma;
       $("proyeccion").classList.toggle("vertical", vertical);
+      VERTICAL = vertical;
       PUESTOS = calcPuestos(vertical, H);
       pintarCampo();
     }
@@ -118,9 +122,11 @@ const armarPuestos = filas => filas.flatMap((f, fi) => f.cx.map((cx, i) => ({
   r: GIROS[(i + fi) % GIROS.length],
 })));
 
-/* Visto desde el celular de quien acaba de enviar (&id=...): su lápida va sola
-   al centro de la fila de adelante (sin giro) y las demás se reparten alrededor. */
+/* Visto desde el celular vertical de quien acaba de enviar (&id=...): su lápida va
+   grande al centro. En pantalla ancha (computador o celular acostado) se ve igual
+   que la proyección; lo único extra es el botón de volver. */
 const MIA = params.get("id");
+let VERTICAL = false;
 /* celular vertical (420 de ancho, alto variable): la suya grande adelante, 2 en el medio
    y 3 atrás, las de atrás solo con el nombre. Medido para 780 de alto; en pantallas
    más altas o más bajas las filas de atrás suben o bajan en proporción. */
@@ -136,30 +142,26 @@ function calcPuestos(vertical, H) {
     p[0].x = 210 - 92; p[0].y = 100; p[0].r = 0;
     return p;
   }
-  const p = armarPuestos(MIA
-    ? [{ ...FILAS[0], cx: [640, 330, 950] }, FILAS[1], FILAS[2]]
-    : FILAS);
-  if (MIA) p[0].x = 640 - 92, p[0].r = 0;
-  return p;
+  return armarPuestos(FILAS);
 }
 let PUESTOS = calcPuestos(false);
 const enPantalla = new Map();   // id -> elemento
 let primeraVez = true;
 
+const PIEDRA = '<div class="piedra"><div class="nombre"></div><div class="linea"></div>' +
+  '<div class="fechas"><span class="nac"></span><span class="guion"></span><span class="interrogante">?</span></div></div>';
+function llenarPiedra(el, r) {
+  el.querySelector(".nombre").textContent = r.nombre || "";
+  el.querySelector(".nac").textContent = fechaNac(r);
+}
+
 function crearLapida(r) {
   const el = document.createElement("div");
   el.className = "lapida";
-  el.innerHTML = '<div class="piedra"><div class="nombre"></div><div class="fechas"></div><div class="linea"></div><div class="mensaje"></div><div class="de"></div></div><div class="vela cera"><div class="halo"></div><div class="llama"></div></div>';
+  el.innerHTML = PIEDRA + '<div class="vela cera"><div class="halo"></div><div class="llama"></div></div>';
+  llenarPiedra(el, r);
   const q = s => el.querySelector(s);
-  q(".nombre").textContent = r.nombre || "";
-  q(".fechas").textContent = fechas(r);
-  q(".fechas").hidden = !fechas(r);
-  q(".mensaje").textContent = r.mensaje || "";
-  q(".mensaje").hidden = q(".linea").hidden = !r.mensaje;
-  q(".de").textContent = r.de ? "de " + r.de : "";
-  q(".de").hidden = !r.de;
   q(".llama").style.animationDelay = (Math.random() * 1.6).toFixed(2) + "s";
-  if (r.id === MIA) el.classList.add("mia");
   return el;
 }
 const colocar = (el, p, extraY = 0) => {
@@ -175,7 +177,7 @@ function pintarCampo() {
 
   let visibles = vivas.slice().reverse();                     // la más nueva primero
   const mia = visibles.find(r => r.id === MIA);
-  if (mia) visibles = [mia, ...visibles.filter(r => r !== mia)]; // la suya siempre en el puesto 0
+  if (mia && VERTICAL) visibles = [mia, ...visibles.filter(r => r !== mia)]; // la suya siempre en el puesto 0
   visibles = visibles.slice(0, PUESTOS.length);
   const ids = new Set(visibles.map(r => r.id));
 
@@ -185,7 +187,7 @@ function pintarCampo() {
     setTimeout(() => el.remove(), 1700);
   }
   // con 4 o menos, la fila de adelante se centra en vez de cargarse a un lado
-  const pocas = visibles.length <= 4 && !MIA;
+  const pocas = visibles.length <= 4 && !VERTICAL;
   visibles.forEach((r, i) => {
     const p = pocas
       ? { ...PUESTOS[i], x: 640 + (visibles.length - 1 - i - (visibles.length - 1) / 2) * 300 - 92 }
@@ -203,6 +205,7 @@ function pintarCampo() {
       if (entra) { el.classList.add("nueva"); setTimeout(() => el.classList.remove("nueva"), 7000); }
     }
     colocar(el, p);
+    el.classList.toggle("mia", VERTICAL && r.id === MIA);
     el.style.opacity = p.o;
   });
   primeraVez = false;
@@ -216,34 +219,43 @@ function pintarCelular() {
   if (!abierto) $("encendida").hidden = true;
 }
 if (vista === "celular") {
-  const f = { nombre: $("fNombre"), nacio: $("fNacio"), partio: $("fPartio"), mensaje: $("fMensaje"), de: $("fDe") };
+  const f = { nombre: $("fNombre"), dia: $("fDia"), mes: $("fMes"), nacio: $("fAnio") };
   const error = msg => { $("fError").textContent = msg; $("fError").hidden = !msg; };
-  f.mensaje.addEventListener("input", () => {
-    const n = f.mensaje.value.length;
-    $("fCuenta").textContent = `${n} / 90`;
-    $("fCuenta").classList.toggle("lleno", n >= 90);
-  });
-  [f.nacio, f.partio].forEach(i => i.addEventListener("input", () => { i.value = i.value.replace(/\D/g, ""); }));
+  [f.dia, f.nacio].forEach(i => i.addEventListener("input", () => { i.value = i.value.replace(/\D/g, ""); }));
+
+  // vista previa de la lápida mientras escribe
+  $("fPrevia").innerHTML = PIEDRA;
+  const previa = () => {
+    const d = { nombre: f.nombre.value.trim(), dia: f.dia.value, mes: f.mes.value, nacio: f.nacio.value };
+    llenarPiedra($("fPrevia"), { nombre: d.nombre || "Tu nombre", dia: d.dia || "", mes: d.mes, nacio: d.nacio.length === 4 ? d.nacio : "" });
+    if (!d.dia && !d.mes && d.nacio.length < 4) $("fPrevia").querySelector(".nac").textContent = "DÍA MES AÑO";
+    $("fPrevia").classList.toggle("sin-nombre", !d.nombre);
+  };
+  Object.values(f).forEach(el => el.addEventListener("input", previa));
+  previa();
 
   $("fEnviar").addEventListener("click", async () => {
     const d = Object.fromEntries(Object.entries(f).map(([k, el]) => [k, el.value.trim()]));
-    const hoy = new Date().getFullYear();
-    const anioMalo = a => a && (!/^\d{4}$/.test(a) || +a < 1850 || +a > hoy);
-    if (!d.nombre) { error("Escribe el nombre de tu ser querido."); f.nombre.focus(); return; }
-    if (anioMalo(d.nacio) || anioMalo(d.partio)) { error("Revisa los años: deben tener 4 números."); return; }
-    if (d.nacio && d.partio && +d.partio < +d.nacio) { error("El año en que partió no puede ser antes del que nació."); return; }
+    const hoy = new Date();
+    if (!d.nombre) { error("Escribe tu nombre completo."); f.nombre.focus(); return; }
+    const dia = +d.dia, mes = +d.mes, anio = +d.nacio;
+    const nac = new Date(anio, mes - 1, dia);
+    if (!dia || !mes || !/^\d{4}$/.test(d.nacio)) { error("Escribe el día, el mes y el año en que naciste."); return; }
+    if (anio < 1900 || nac.getDate() !== dia || nac.getMonth() !== mes - 1 || nac > hoy) { error("Revisa tu fecha de nacimiento."); return; }
     error("");
     $("fEnviar").disabled = true;
     try {
-      const ref = await addDoc(MEM, { ...d, status: ESTADO_INICIAL, ts: Date.now() });
+      // mensaje, de y partio van vacíos: las reglas de Firestore todavía los piden
+      const ref = await addDoc(MEM, {
+        nombre: d.nombre, dia: String(dia).padStart(2, "0"), mes: d.mes, nacio: d.nacio,
+        partio: "", mensaje: "", de: "", status: ESTADO_INICIAL, ts: Date.now()
+      });
       // sin moderación, pasa directo a ver el muro con su lápida al centro
       if (!MODERAR) { location.href = `/memoria?v=proyeccion&cel=1&id=${ref.id}`; return; }
-      $("eNombre").textContent = d.nombre;
-      $("eBajada").textContent = MODERAR
-        ? "En unos momentos aparecerá en la pantalla. Esta noche la recordamos contigo."
-        : "Levanta la mirada. Esta noche la recordamos contigo.";
+      $("eNombre").textContent = d.nombre.split(" ")[0];
+      $("eBajada").textContent = "En unos momentos aparecerá en la pantalla. Nadie sabe el día ni la hora.";
       Object.values(f).forEach(el => el.value = "");
-      $("fCuenta").textContent = "0 / 90";
+      previa();
       $("formulario").hidden = true;
       $("encendida").hidden = false;
       scrollTo(0, 0);
@@ -262,7 +274,7 @@ if (vista === "celular") {
 function item(r, botones) {
   const d = document.createElement("div"); d.className = "m-item";
   const t = document.createElement("div"); t.className = "txt";
-  [["n", r.nombre], ["m", r.mensaje], ["d", [fechas(r), r.de && "de " + r.de].filter(Boolean).join(" · ")]]
+  [["n", r.nombre], ["d", (fechaNac(r) || "") + " — ?"]]
     .forEach(([c, txt]) => { if (!txt) return; const e = document.createElement("div"); e.className = c; e.textContent = txt; t.appendChild(e); });
   d.appendChild(t);
   botones.forEach(([txt, status]) => {
