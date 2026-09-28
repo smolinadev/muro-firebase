@@ -76,10 +76,19 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .flota{animation:flota 7s ease-in-out infinite}
 .txt{position:relative;display:block;font-family:var(--serif);font-weight:400;line-height:1.08;white-space:nowrap;letter-spacing:-.01em;
   color:var(--tinta);transition:color 1s,text-shadow 1s,opacity 1s}
-.primera .txt{color:var(--oro);font-weight:300;text-shadow:0 0 40px rgba(224,169,85,.35)}
-.mia .txt{color:var(--oro-claro);text-shadow:0 0 22px rgba(255,217,160,.5)}
-.mia .txt::after{content:"";position:absolute;left:10%;right:10%;bottom:-.06em;height:2px;border-radius:2px;
-  background:linear-gradient(90deg,transparent,var(--oro),transparent)}
+/* tu palabra (vista desde el celular): dorado apagado */
+.mia .txt{color:var(--oro);font-weight:300;text-shadow:0 0 40px rgba(224,169,85,.35)}
+/* la líder: dorado brillante, subrayado de luz y corona (va después: si es la tuya, gana esta) */
+.primera .txt{color:var(--oro-claro);font-weight:400;padding:.44em 0 .06em;
+  text-shadow:0 0 24px rgba(255,217,160,.55),0 0 80px rgba(224,169,85,.3)}
+.primera .txt::after{content:"";position:absolute;left:10%;right:10%;bottom:.04em;height:max(2px,.028em);border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--oro-claro),transparent);box-shadow:0 0 14px rgba(255,210,140,.7)}
+.primera .txt::before{content:"";position:absolute;left:50%;top:.02em;width:.6em;height:.4em;margin-left:-.3em;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 66'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4d6'/%3E%3Cstop offset='.45' stop-color='%23f2c572'/%3E%3Cstop offset='1' stop-color='%23a8732a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 50 L5 17 L29 35 L50 8 L71 35 L95 17 L90 50 Z' fill='url(%23g)' stroke='%237a5218' stroke-width='1.5' stroke-linejoin='round'/%3E%3Crect x='9' y='50' width='82' height='11' rx='3' fill='url(%23g)' stroke='%237a5218' stroke-width='1.5'/%3E%3Ccircle cx='5' cy='15' r='5' fill='%23fff4d6'/%3E%3Ccircle cx='50' cy='6' r='5.5' fill='%23fff4d6'/%3E%3Ccircle cx='95' cy='15' r='5' fill='%23fff4d6'/%3E%3Cpath d='M50 30 L56 39 L50 48 L44 39 Z' fill='%23c8324a'/%3E%3Ccircle cx='27' cy='45' r='3.6' fill='%232a6aa6'/%3E%3Ccircle cx='73' cy='45' r='3.6' fill='%232a6aa6'/%3E%3Ccircle cx='30' cy='55.5' r='2' fill='%23fff4d6'/%3E%3Ccircle cx='50' cy='55.5' r='2' fill='%23fff4d6'/%3E%3Ccircle cx='70' cy='55.5' r='2' fill='%23fff4d6'/%3E%3C/svg%3E") center/contain no-repeat;
+  filter:drop-shadow(0 0 .06em rgba(255,200,110,.75));transform-origin:50% 100%;
+  animation:corona-entra .9s cubic-bezier(.2,1.4,.4,1) both,corona 4s ease-in-out .9s infinite}
+@keyframes corona-entra{0%{transform:translateY(-.3em) rotate(-25deg) scale(.2);opacity:0}100%{transform:rotate(-7deg);opacity:1}}
+@keyframes corona{0%,100%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(-4deg) translateY(-.04em);filter:drop-shadow(0 0 .12em rgba(255,215,140,.95))}}
 
 /* palabra nueva: aparece desde un punto de luz */
 .palabra.entra .txt{animation:entra 1.3s cubic-bezier(.2,.9,.25,1.2) both}
@@ -116,7 +125,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .volver{padding:9px 14px;border-radius:10px;background:rgba(7,8,12,.75);border:1px solid rgba(224,169,85,.4);
   color:var(--tinta);font:500 14px var(--sans);text-decoration:none;white-space:nowrap}
 .tuya{padding:9px 14px;border-radius:10px;background:rgba(7,8,12,.75);font-size:13px;color:var(--apagado);order:2}
-.tuya b{font-family:var(--serif);font-weight:400;font-size:17px;color:var(--oro-claro)}
+.tuya b{font-family:var(--serif);font-weight:400;font-size:17px;color:var(--oro)}
 
 /* celular vertical: escenario de 420 de ancho (ver encajar() en palabras.js) */
 #proyeccion.vertical .desde-cel{flex-direction:column}
@@ -193,6 +202,6 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .vacio-txt{font-size:13px;color:var(--tenue);padding:10px 0}
 
 @media (prefers-reduced-motion:reduce){
-  .brasa,.qr-grande,.paso,.flota,.fantasma,.chispa{animation:none!important}
+  .brasa,.qr-grande,.paso,.flota,.fantasma,.chispa,.primera .txt::before{animation:none!important}
   .palabra.late .txt,.palabra.entra .txt{animation-duration:.01ms!important}
 }
