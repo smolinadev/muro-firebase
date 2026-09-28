@@ -1,0 +1,198 @@
+:root{
+  --noche:#07080c; --noche2:#0e0f15; --tierra:#1b1810;
+  --tinta:#efe6d4; --suave:#c9bda5; --apagado:#b9ad97; --tenue:#7f7667;
+  --oro:#e0a955; --oro2:#c98d3a; --oro-claro:#ffd9a0;
+  --serif:"Newsreader",Georgia,serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
+[hidden]{display:none!important}
+.kicker{font-size:12px;letter-spacing:.38em;text-transform:uppercase;color:var(--oro)}
+
+@keyframes ember{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-440px) translateX(26px);opacity:0}}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 1px rgba(224,169,85,.35),0 0 40px rgba(224,169,85,.12)}50%{box-shadow:0 0 0 1px rgba(224,169,85,.6),0 0 70px rgba(224,169,85,.28)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes deriva{0%{transform:translate(0,0);opacity:0}15%,85%{opacity:1}100%{transform:translate(40px,-60px);opacity:0}}
+
+/* ================= PROYECCIÓN ================= */
+#proyeccion{position:fixed;inset:0;overflow:hidden;background:#000}
+/* el escenario mide 1280x720 y se escala para llenar la pantalla */
+#escena{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform-origin:0 0;
+  background:radial-gradient(ellipse 90% 70% at 50% 110%,var(--tierra) 0%,var(--noche2) 45%,var(--noche) 100%)}
+.espera,.campo{position:absolute;inset:0;transition:opacity 1.6s ease}
+#escena.vacio .campo{opacity:0;pointer-events:none}
+#escena:not(.vacio) .espera{opacity:0;pointer-events:none}
+
+.brasa{position:absolute;width:3px;height:3px;border-radius:50%;background:#ffcf85;animation:ember 7.5s linear infinite}
+.suelo{position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;background:linear-gradient(180deg,rgba(10,10,12,0) 0%,#0b0a08 75%)}
+.firma{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#6f675a}
+.url{font-size:15px;color:var(--apagado)}
+
+/* --- pantalla vacía --- */
+.espera-texto{position:absolute;left:90px;top:92px;width:640px;display:flex;flex-direction:column;gap:18px}
+.espera-texto .kicker{font-size:13px;letter-spacing:.4em}
+.espera-texto h1{font-family:var(--serif);font-weight:300;font-size:68px;line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
+.bajada{font-family:var(--serif);font-style:italic;font-weight:300;font-size:22px;line-height:1.4;color:var(--suave);max-width:600px;text-wrap:balance}
+.pasos{display:flex;gap:26px;margin-top:18px}
+.paso{display:flex;flex-direction:column;gap:8px;width:170px;animation:fadeUp 1s ease both}
+.paso:nth-child(2){animation-delay:.3s}.paso:nth-child(3){animation-delay:.6s}
+.paso b{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1;color:var(--oro)}
+.paso i{width:30px;height:1px;background:rgba(224,169,85,.5)}
+.paso span{font-size:14px;line-height:1.45;color:#d8ccb4}
+.espera-qr{position:absolute;right:96px;top:104px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.qr-grande{width:232px;height:232px;border-radius:18px;display:block;margin-bottom:10px;animation:breathe 3.4s ease-in-out infinite}
+.escanea{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--oro)}
+/* palabras de ejemplo, muy tenues, que suben despacio abajo de la pantalla de espera */
+#fantasmas{position:absolute;left:0;right:0;bottom:70px;height:190px;pointer-events:none}
+.fantasma{position:absolute;font-family:var(--serif);font-style:italic;font-weight:300;color:rgba(224,169,85,.13);white-space:nowrap;
+  animation:deriva 14s ease-in-out infinite both}
+
+/* --- nube de palabras --- */
+.campo-titulo{position:absolute;left:0;right:0;top:34px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.campo-titulo h2{font-family:var(--serif);font-weight:300;font-size:36px;line-height:1.1;max-width:760px;text-wrap:balance}
+.contador{position:absolute;left:34px;top:40px;display:flex;flex-direction:column;gap:2px}
+.contador b{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1;color:var(--oro);transition:color .4s}
+.contador b.sube{animation:cuenta .7s ease}
+@keyframes cuenta{40%{transform:scale(1.25);color:var(--oro-claro)}}
+.contador b{display:inline-block;transform-origin:0 70%}
+.contador span{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#a79c86}
+.campo-qr{position:absolute;right:34px;top:34px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.campo-qr .url{font-size:11px}
+.qr-chico{width:92px;height:92px;border-radius:10px;display:block}
+
+/* tres bloques: arriba (se apila hacia el centro), la más votada, abajo.
+   Todo es flujo normal con flex-wrap: las palabras nunca se superponen. */
+#nube{position:absolute;left:60px;right:60px;top:150px;bottom:58px;display:flex;flex-direction:column}
+.bloque{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 34px;min-height:0}
+.arriba{flex:1 1 0;align-content:flex-end;align-items:flex-end}
+.abajo{flex:1 1 0;align-content:flex-start;align-items:flex-start}
+.centro{flex:none;padding:2px 0}
+
+/* .palabra = posición (FLIP) · .flota = vaivén suave · .txt = latido al recibir voto */
+.palabra{position:relative;flex:none;transform-origin:0 0;will-change:transform}
+.flota{animation:flota 7s ease-in-out infinite}
+.txt{position:relative;display:block;font-family:var(--serif);font-weight:400;line-height:1.08;white-space:nowrap;letter-spacing:-.01em;
+  color:var(--tinta);transition:color 1s,text-shadow 1s,opacity 1s}
+.primera .txt{color:var(--oro);font-weight:300;text-shadow:0 0 40px rgba(224,169,85,.35)}
+.mia .txt{color:var(--oro-claro);text-shadow:0 0 22px rgba(255,217,160,.5)}
+.mia .txt::after{content:"";position:absolute;left:10%;right:10%;bottom:-.06em;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--oro),transparent)}
+
+/* palabra nueva: aparece desde un punto de luz */
+.palabra.entra .txt{animation:entra 1.3s cubic-bezier(.2,.9,.25,1.2) both}
+@keyframes entra{
+  0%{opacity:0;transform:scale(.2);filter:blur(10px);text-shadow:0 0 60px var(--oro)}
+  60%{opacity:1;filter:blur(0)}
+  100%{opacity:1;transform:scale(1);filter:blur(0)}
+}
+/* voto nuevo: tiembla, crece y brilla */
+.palabra.late .txt{animation:late 1.6s cubic-bezier(.3,.7,.3,1) both}
+@keyframes late{
+  0%{transform:scale(1) rotate(0)}
+  10%{transform:scale(1.22) rotate(-5deg);color:var(--oro-claro);text-shadow:0 0 50px rgba(255,210,140,.9)}
+  20%{transform:scale(1.26) rotate(4deg)}
+  30%{transform:scale(1.24) rotate(-3.5deg)}
+  40%{transform:scale(1.2) rotate(2.5deg);color:var(--oro-claro);text-shadow:0 0 44px rgba(255,210,140,.75)}
+  52%{transform:scale(1.14) rotate(-1.5deg)}
+  64%{transform:scale(1.08) rotate(.8deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+.txt{transform-origin:50% 60%}
+/* "+1" que sube y chispas que salen del centro de la palabra */
+.mas1{position:absolute;left:50%;top:0;font:600 22px var(--sans);color:var(--oro-claro);pointer-events:none;
+  text-shadow:0 0 12px rgba(224,169,85,.8);animation:mas1 1.6s ease-out forwards}
+@keyframes mas1{0%{transform:translate(-50%,10px) scale(.6);opacity:0}20%{transform:translate(-50%,-18px) scale(1.1);opacity:1}100%{transform:translate(-50%,-70px) scale(1);opacity:0}}
+.chispa-v{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,#fff3d6 0%,var(--oro) 60%,transparent 100%);animation:chispa 1s ease-out forwards}
+@keyframes chispa{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+
+/* visto desde el celular */
+.desde-cel{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;
+  display:flex;align-items:center;gap:10px;pointer-events:none}
+.desde-cel>*{pointer-events:auto}
+.volver{padding:9px 14px;border-radius:10px;background:rgba(7,8,12,.75);border:1px solid rgba(224,169,85,.4);
+  color:var(--tinta);font:500 14px var(--sans);text-decoration:none;white-space:nowrap}
+.tuya{padding:9px 14px;border-radius:10px;background:rgba(7,8,12,.75);font-size:13px;color:var(--apagado);order:2}
+.tuya b{font-family:var(--serif);font-weight:400;font-size:17px;color:var(--oro-claro)}
+
+/* celular vertical: escenario de 420 de ancho (ver encajar() en palabras.js) */
+#proyeccion.vertical .desde-cel{flex-direction:column}
+#proyeccion.vertical .tuya{order:0}
+#proyeccion.vertical .volver{padding:11px 20px;border-radius:999px}
+#proyeccion.vertical .campo-qr,#proyeccion.vertical .firma{display:none}
+#proyeccion.vertical .campo-titulo{top:30px;gap:8px;padding:0 24px}
+#proyeccion.vertical .campo-titulo .kicker{font-size:11px}
+#proyeccion.vertical .campo-titulo h2{font-size:28px;max-width:340px}
+#proyeccion.vertical .contador{left:0;right:0;top:128px;flex-direction:row;justify-content:center;align-items:baseline;gap:8px}
+#proyeccion.vertical .contador b{font-size:22px}
+#proyeccion.vertical #nube{left:16px;right:16px;top:170px;bottom:130px}
+#proyeccion.vertical .bloque{gap:2px 16px}
+#proyeccion.vertical .espera-texto{left:28px;top:56px;width:364px}
+#proyeccion.vertical .espera-texto h1{font-size:44px}
+#proyeccion.vertical .pasos{flex-direction:column;gap:14px}
+#proyeccion.vertical .paso{width:auto}
+#proyeccion.vertical .espera-qr{display:none}
+
+/* ================= CELULAR y MODERACIÓN ================= */
+.cel{min-height:100%;display:flex;justify-content:center;
+  background:radial-gradient(ellipse 90% 45% at 50% 0%,var(--tierra) 0%,var(--noche2) 55%,var(--noche) 100%)}
+#formulario,#mGate,#mPanel,.cerrado{width:100%;max-width:420px;padding:40px 24px 32px;display:flex;flex-direction:column;gap:18px}
+.cel-cabeza{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;margin-bottom:8px}
+.cel h1{font-family:var(--serif);font-weight:300;font-size:32px;line-height:1.1;text-wrap:balance}
+.cel-cabeza p{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--apagado)}
+.cel .kicker{font-size:11px;letter-spacing:.36em}
+.chispa{width:10px;height:10px;margin-top:26px;border-radius:50%;background:var(--oro-claro);
+  box-shadow:0 0 18px 6px rgba(224,169,85,.45),0 0 60px 20px rgba(224,169,85,.15);animation:breatheDot 3s ease-in-out infinite}
+@keyframes breatheDot{50%{transform:scale(1.3);box-shadow:0 0 24px 8px rgba(224,169,85,.55),0 0 80px 26px rgba(224,169,85,.2)}}
+
+.campo-form{display:flex;flex-direction:column;gap:8px}
+.etiqueta{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--suave)}
+.etiqueta em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;color:var(--tenue)}
+.cel input{width:100%;border-radius:12px;border:1px solid rgba(224,169,85,.22);background:rgba(244,232,208,.05);
+  color:var(--tinta);font-family:var(--sans);font-size:16px;padding:0 16px;height:52px;outline:none;transition:border-color .2s}
+.cel input:focus{border-color:rgba(224,169,85,.7)}
+.cel input::placeholder{color:var(--tenue)}
+#fPalabra{font-family:var(--serif);font-size:26px;height:64px;text-align:center}
+#fPalabra.sacude{animation:sacude .4s}
+@keyframes sacude{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.sugerencias{display:flex;flex-direction:column;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid rgba(224,169,85,.3);background:rgba(244,232,208,.04);color:var(--suave);border-radius:999px;
+  padding:8px 14px;font-family:var(--serif);font-size:17px;cursor:pointer;transition:.2s}
+.chip.on{border-color:var(--oro);color:var(--oro-claro);background:rgba(224,169,85,.12)}
+.error{font-size:13px;color:#e08a78;text-align:center}
+.boton{height:56px;border-radius:14px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(180deg,#e8b565 0%,var(--oro2) 100%);box-shadow:0 10px 30px rgba(224,169,85,.25);
+  font-family:var(--sans);font-size:16px;font-weight:600;letter-spacing:.02em;color:#1a1206;margin-top:6px;text-decoration:none}
+.boton:disabled{opacity:.5;cursor:wait}
+.boton.borde{background:transparent;box-shadow:none;border:1px solid rgba(224,169,85,.45);color:var(--tinta);font-weight:500;font-size:15px;height:54px}
+.boton.peligro{border-color:rgba(224,138,120,.45)}
+.boton.peligro.confirma{background:rgba(224,138,120,.15);color:#f0b1a4}
+.pie{font-size:12px;line-height:1.5;color:var(--tenue);text-align:center}
+.cerrado{min-height:100vh;justify-content:center;align-items:center;text-align:center}
+.cerrado p{color:var(--apagado)}
+.cerrado .boton{align-self:stretch}
+.palabra-grande{font-family:var(--serif);font-size:44px;color:var(--oro-claro)!important;text-shadow:0 0 30px rgba(224,169,85,.4)}
+
+/* moderación */
+.gate{min-height:100vh;justify-content:center}
+.m-cabeza{display:flex;justify-content:space-between;align-items:center}
+.m-cabeza h1{font-size:26px}
+.m-botones{display:flex;flex-direction:column;gap:0}
+.mini{border:1px solid rgba(224,169,85,.3);background:transparent;color:var(--suave);border-radius:10px;padding:8px 14px;font:500 13px var(--sans);cursor:pointer}
+.m-estado{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue)}
+#mPanel h3{font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--oro);margin-top:10px}
+.m-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(224,169,85,.18);border-radius:12px;background:rgba(244,232,208,.03)}
+.m-item .txt-m{flex:1;min-width:0}
+.m-item .n{font-family:var(--serif);font-size:20px;line-height:1.2;overflow-wrap:anywhere}
+.m-item .d{font-size:11px;color:var(--tenue);margin-top:3px}
+.m-item button{flex:none}
+.vacio-txt{font-size:13px;color:var(--tenue);padding:10px 0}
+
+@media (prefers-reduced-motion:reduce){
+  .brasa,.qr-grande,.paso,.flota,.fantasma,.chispa{animation:none!important}
+  .palabra.late .txt,.palabra.entra .txt{animation-duration:.01ms!important}
+}

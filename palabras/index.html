@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muro de Palabras — Colombia Noviolenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- rutas absolutas: la página se abre como /palabras (sin barra final) -->
+<link rel="stylesheet" href="/palabras/palabras.css">
+</head>
+<body>
+
+<!-- ============ PROYECCIÓN  (?v=proyeccion) ============ -->
+<section class="vista" id="proyeccion" hidden>
+  <div id="escena" class="vacio">
+    <div id="brasas"></div>
+
+    <!-- pantalla vacía: antes de la primera palabra -->
+    <div class="espera">
+      <div id="fantasmas"></div>
+      <div class="espera-texto">
+        <div class="kicker">Una sola palabra</div>
+        <h1>En una palabra, ¿qué te llevas?</h1>
+        <p class="bajada">Escríbela desde tu celular. Si otras personas piensan lo mismo, tu palabra crece.</p>
+        <div class="pasos">
+          <div class="paso"><b>1</b><i></i><span>Escanea el código con la cámara de tu celular</span></div>
+          <div class="paso"><b>2</b><i></i><span>Escribe una sola palabra: lo que te llevas de esta noche</span></div>
+          <div class="paso"><b>3</b><i></i><span>Mírala aparecer y crecer en esta pantalla</span></div>
+        </div>
+      </div>
+      <div class="espera-qr">
+        <img class="qr-grande" src="/palabras/qr-palabras.png" alt="Código QR para participar">
+        <div class="escanea">Escanea aquí</div>
+        <div class="url" data-url></div>
+      </div>
+    </div>
+
+    <!-- nube de palabras: arriba · la más votada · abajo -->
+    <div class="campo">
+      <div class="campo-titulo">
+        <div class="kicker">Una sola palabra</div>
+        <h2>En una palabra, ¿qué te llevas?</h2>
+      </div>
+      <div class="contador"><b id="contador">0</b><span>participaciones</span></div>
+      <div class="campo-qr"><img class="qr-chico" src="/palabras/qr-palabras.png" alt="Código QR para participar"><div class="url" data-url></div></div>
+      <div id="nube">
+        <div class="bloque arriba" id="nArriba"></div>
+        <div class="bloque centro" id="nCentro"></div>
+        <div class="bloque abajo" id="nAbajo"></div>
+      </div>
+    </div>
+
+    <div class="suelo"></div>
+    <div class="firma">Colombia Noviolenta</div>
+  </div>
+  <!-- solo cuando se abre desde el celular (&cel=1) -->
+  <div class="desde-cel" id="desdeCel" hidden>
+    <div class="tuya" id="tuya" hidden>Tu palabra: <b id="tuyaTxt"></b></div>
+    <a class="volver" href="/palabras?ya=1">← Volver</a>
+  </div>
+</section>
+
+<!-- ============ CELULAR  (sin ?v, la del QR) ============ -->
+<section class="vista cel" id="celular" hidden>
+  <div id="formulario">
+    <header class="cel-cabeza">
+      <div class="chispa"></div>
+      <div class="kicker">Muro de palabras</div>
+      <h1>En una palabra, ¿qué te llevas?</h1>
+      <p>Una sola palabra.</p>
+    </header>
+
+    <label class="campo-form">
+      <span class="etiqueta">Tu palabra <em id="fCuenta">0/20</em></span>
+      <input id="fPalabra" maxlength="20" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" placeholder="Escribe aquí">
+    </label>
+
+    <div class="sugerencias" id="fSugerencias" hidden>
+      <span class="etiqueta">Otras personas escribieron</span>
+      <div class="chips" id="fChips"></div>
+    </div>
+
+    <p class="error" id="fError" hidden></p>
+    <button class="boton" id="fEnviar"><span>Enviar mi palabra</span></button>
+    <p class="pie">Colombia Noviolenta · Concierto conferencia</p>
+  </div>
+
+  <!-- volvió desde la proyección (?ya=1) y ya había votado -->
+  <div id="listo" class="cerrado" hidden>
+    <div class="kicker">Muro de palabras</div>
+    <h1>Tu palabra ya está en el muro</h1>
+    <p class="palabra-grande" id="lPalabra"></p>
+    <p>Gracias por dejarla aquí.</p>
+    <a class="boton borde" id="lVer" href="/palabras?v=proyeccion&cel=1">Ver el muro</a>
+  </div>
+
+  <div id="cerrado" class="cerrado" hidden>
+    <div class="kicker">Muro de palabras</div>
+    <h1>Por ahora no se reciben más palabras</h1>
+    <p>Gracias por estar aquí esta noche.</p>
+  </div>
+</section>
+
+<!-- ============ MODERACIÓN  (?v=mod) ============ -->
+<section class="vista cel" id="mod" hidden>
+  <div id="mGate" class="gate">
+    <div class="kicker">Muro de palabras</div>
+    <h1>Acceso del equipo</h1>
+    <label class="campo-form"><span class="etiqueta">Correo</span><input id="mMail" type="email" autocomplete="username"></label>
+    <label class="campo-form"><span class="etiqueta">Contraseña</span><input id="mPass" type="password" autocomplete="current-password"></label>
+    <p class="error" id="mError" hidden>Correo o contraseña incorrectos.</p>
+    <button class="boton" id="mEntrar">Entrar</button>
+  </div>
+  <div id="mPanel" hidden>
+    <div class="m-cabeza">
+      <h1>Muro de palabras</h1>
+      <button class="mini" id="mSalir">Salir</button>
+    </div>
+    <p class="m-estado" id="mEstado"></p>
+    <div class="m-botones">
+      <button class="boton borde" id="mAbrir">Cerrar participación</button>
+      <button class="boton borde" id="mSimular">Simular público</button>
+      <button class="boton borde peligro" id="mLimpiar">Limpiar muro</button>
+    </div>
+    <h3>En pantalla</h3>
+    <div id="mLista"><p class="vacio-txt">Aún no hay palabras.</p></div>
+    <h3 id="mTituloOcultas" hidden>Ocultas</h3>
+    <div id="mOcultas"></div>
+  </div>
+</section>
+
+<script type="module" src="/palabras/palabras.js"></script>
+</body>
+</html>
