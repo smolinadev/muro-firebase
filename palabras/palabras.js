@@ -22,7 +22,7 @@ const PAL    = collection(db, "palabras");
 const CONF   = doc(db, "config", "palabras");
 const CONTEO = doc(db, "conteos", "palabras");   // total de participaciones (n)
 
-const MAX_LETRAS = 20;
+const MAX_LETRAS = 14;   // "reconciliación" (14) es la más larga que esperamos
 const EN_PANTALLA = 20;
 
 /* Palabras que no se publican. Se comparan ya normalizadas (minúsculas, sin tildes).
@@ -146,13 +146,18 @@ let palabras = [];
 const enNube = new Map();   // id -> { el, votos }
 let primeraCarga = true;
 
-/* tamaño = MIN + (MAX - MIN) * (votos / votosDelMayor)^0.6
-   El exponente comprime el rango: la de 1 voto sigue leyéndose junto a la de 20.
-   Con 1 o 2 palabras el máximo es intermedio, para que no llene la pantalla. */
-function tamano(votos, mayor, cuantas) {
-  const MIN = VERTICAL ? 18 : 22, MAX = VERTICAL ? 72 : 130;
+/* Escala lineal entre MIN (1 voto) y la líder, con el paso según los votos actuales:
+   con 4 votos de máximo → 4: 130, 3: 98, 2: 66, 1: 34. Así cada voto se nota aunque
+   el rango sea estrecho. La líder siempre va en el tope (aunque todas tengan 1 voto).
+   Con 1 o 2 palabras el tope es intermedio, para que no llene la pantalla.
+   Las de más de 12 letras van al 85%: ocupan mucho ancho y se ven más grandes. */
+function tamano(votos, mayor, cuantas, texto, lider) {
+  const MIN = VERTICAL ? 19 : 34, MAX = VERTICAL ? 72 : 130;
   const tope = cuantas >= 3 ? MAX : MIN + (MAX - MIN) * (cuantas === 2 ? .68 : .48);
-  return MIN + (tope - MIN) * Math.pow(votos / mayor, 0.6);
+  const paso = (tope - MIN) / Math.max(1, mayor - 1);
+  let t = lider ? tope : MIN + (votos - 1) * paso;
+  if (texto.length > 12) t *= .85;
+  return t;
 }
 
 function crearPalabra(r) {
@@ -214,7 +219,7 @@ function pintarNube(hayDatos) {
     el.classList.toggle("primera", r === lista[0]);
     el.classList.toggle("mia", DESDE_CEL && r.id === MIA);
     el.style.transition = "none"; el.style.transform = "none";
-    el._base = tamano(r.votos, mayor, lista.length);
+    el._base = tamano(r.votos, mayor, lista.length, r.texto || r.id, r === lista[0]);
     padre.appendChild(el);
     return o;
   };
