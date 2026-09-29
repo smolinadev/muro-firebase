@@ -118,10 +118,20 @@ if (vista === "proyeccion") {
     b.style.cssText = `left:${x}px;bottom:${80 + (i % 4) * 25}px;animation-delay:${(i * 0.8).toFixed(1)}s`;
     $("brasas").appendChild(b);
   });
-  // pantalla de espera: palabras de ejemplo que suben muy tenues
-  ["esperanza", "memoria", "perdón", "abrazo", "paz", "escucha", "dignidad", "ternura", "vida", "valentía"].forEach((p, i) => {
+  /* pantalla de espera: palabras de ejemplo (lista fija, NUNCA las de la votación) que entran
+     por los bordes y derivan hacia el QR, apagándose antes de llegar: la convergencia.
+     Coordenadas relativas al centro del QR (el origen de #fantasmas). */
+  const FANTASMAS = ["esperanza", "memoria", "perdón", "abrazo", "paz", "escucha", "dignidad",
+                     "ternura", "vida", "valentía", "encuentro", "verdad"];
+  FANTASMAS.forEach((p, i) => {
+    const ang = (i / FANTASMAS.length) * 2 * Math.PI + (i % 3) * 0.17;   // repartidas alrededor
+    const c = Math.cos(ang), s = Math.sin(ang);
+    const dur = 24 + (i * 7) % 9;                                          // 24–32 s, lentas
     const f = document.createElement("div"); f.className = "fantasma"; f.textContent = p;
-    f.style.cssText = `left:${60 + i * 118}px;bottom:${(i * 37) % 120}px;font-size:${26 + (i * 13) % 30}px;animation-delay:${-(i * 1.4).toFixed(1)}s`;
+    f.style.cssText = `font-size:${26 + (i * 13) % 20}px;--dur:${dur}s;animation-delay:${-(i * dur / FANTASMAS.length).toFixed(1)}s;` +
+      `--x0:${Math.round(c * 700)}px;--y0:${Math.round(s * 430)}px;` +   // en el borde
+      `--xm:${Math.round(c * 420)}px;--ym:${Math.round(s * 270)}px;` +   // quieta (reduced-motion)
+      `--x1:${Math.round(c * 175)}px;--y1:${Math.round(s * 150)}px`;     // junto al QR, ya apagada
     $("fantasmas").appendChild(f);
   });
 

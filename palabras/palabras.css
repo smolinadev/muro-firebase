@@ -2,6 +2,7 @@
   --noche:#07080c; --noche2:#0e0f15; --tierra:#1b1810;
   --tinta:#efe6d4; --suave:#c9bda5; --apagado:#b9ad97; --tenue:#7f7667;
   --oro:#e0a955; --oro2:#c98d3a; --oro-claro:#ffd9a0;
+  --azul:#196AAC; --azul-claro:#8fbde6;   /* azul CNV: solo en la espera */
   --serif:"Newsreader",Georgia,serif;
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
@@ -15,13 +16,22 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 @keyframes breathe{0%,100%{box-shadow:0 0 0 1px rgba(224,169,85,.35),0 0 40px rgba(224,169,85,.12)}50%{box-shadow:0 0 0 1px rgba(224,169,85,.6),0 0 70px rgba(224,169,85,.28)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes deriva{0%{transform:translate(0,0);opacity:0}15%,85%{opacity:1}100%{transform:translate(40px,-60px);opacity:0}}
+/* de un borde hacia el QR: entra, se acerca achicándose y se apaga antes de tocarlo */
+@keyframes converge{
+  0%{transform:translate(var(--x0),var(--y0)) translate(-50%,-50%) scale(1);opacity:0}
+  18%{opacity:1}
+  60%{opacity:.7}
+  100%{transform:translate(var(--x1),var(--y1)) translate(-50%,-50%) scale(.55);opacity:0}}
 
 /* ================= PROYECCIÓN ================= */
 #proyeccion{position:fixed;inset:0;overflow:hidden;background:#000}
 /* el escenario mide 1280x720 y se escala para llenar la pantalla */
-#escena{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform-origin:0 0;
+#escena{position:absolute;left:50%;top:50%;width:1280px;height:720px;overflow:hidden;transform-origin:0 0;background:var(--noche)}
+/* el degradado cálido y las brasas son de la nube: en la espera se apagan y "se calienta" al llegar la primera palabra */
+#escena::before{content:"";position:absolute;inset:0;transition:opacity 1.6s ease;
   background:radial-gradient(ellipse 90% 70% at 50% 110%,var(--tierra) 0%,var(--noche2) 45%,var(--noche) 100%)}
+#brasas{position:absolute;inset:0;transition:opacity 1.6s ease}
+#escena.vacio::before,#escena.vacio #brasas{opacity:0}
 .espera,.campo{position:absolute;inset:0;transition:opacity 1.6s ease}
 #escena.vacio .campo{opacity:0;pointer-events:none}
 #escena:not(.vacio) .espera{opacity:0;pointer-events:none}
@@ -31,24 +41,32 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .firma{position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#6f675a}
 .url{font-size:15px;color:var(--apagado)}
 
-/* --- pantalla vacía --- */
-.espera-texto{position:absolute;left:90px;top:92px;width:640px;display:flex;flex-direction:column;gap:18px}
-.espera-texto .kicker{font-size:13px;letter-spacing:.4em}
-.espera-texto h1{font-family:var(--serif);font-weight:300;font-size:68px;line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
-.bajada{font-family:var(--serif);font-style:italic;font-weight:300;font-size:22px;line-height:1.4;color:var(--suave);max-width:600px;text-wrap:balance}
-.pasos{display:flex;gap:26px;margin-top:18px}
-.paso{display:flex;flex-direction:column;gap:8px;width:170px;animation:fadeUp 1s ease both}
-.paso:nth-child(2){animation-delay:.3s}.paso:nth-child(3){animation-delay:.6s}
-.paso b{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1;color:var(--oro)}
-.paso i{width:30px;height:1px;background:rgba(224,169,85,.5)}
-.paso span{font-size:14px;line-height:1.45;color:#d8ccb4}
-.espera-qr{position:absolute;right:96px;top:104px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.qr-grande{width:232px;height:232px;border-radius:18px;display:block;margin-bottom:10px;animation:breathe 3.4s ease-in-out infinite}
+/* --- pantalla vacía: composición centrada y radial, el QR es el eje --- */
+.espera{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding-bottom:40px;text-align:center}
+.espera-cabeza,.pasos,.qr-grande,.espera .url{position:relative;z-index:1}
+.espera-cabeza{display:flex;flex-direction:column;align-items:center;gap:12px}
+.espera>*,.espera-cabeza>*{max-width:100%}
+.espera .kicker{font-size:13px;font-weight:600;letter-spacing:.55em;margin-right:-.55em;color:var(--azul-claro)}
+.espera h1{font-family:var(--serif);font-weight:300;font-size:58px;line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
+.bajada{font-family:var(--serif);font-style:italic;font-weight:300;font-size:21px;line-height:1.4;color:var(--suave);max-width:min(600px,100%);text-wrap:balance}
+.espera-qr{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px}
+/* halo azul muy tenue, como si la luz saliera del QR */
+.espera-qr::before{content:"";position:absolute;left:50%;top:116px;width:1100px;height:760px;transform:translate(-50%,-50%);pointer-events:none;
+  background:radial-gradient(closest-side,rgba(25,106,172,.26) 0%,rgba(25,106,172,.10) 42%,rgba(25,106,172,0) 100%)}
+.qr-grande{width:232px;height:232px;border-radius:18px;display:block;animation:breathe 3.4s ease-in-out infinite}
+.espera .url{font-size:14px;letter-spacing:.06em}
+.pasos{display:flex;align-items:center;gap:18px;animation:fadeUp 1s .3s ease both}
+.paso{display:flex;align-items:center;gap:11px}
+.paso b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--azul);color:#eaf3fb;
+  font-size:14px;font-weight:700;line-height:1;box-shadow:0 0 18px rgba(25,106,172,.55)}
+.paso span{font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#d6dde6}
+.pasos i{width:34px;height:1px;background:rgba(143,189,230,.35)}
 .escanea{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--oro)}
-/* palabras de ejemplo, muy tenues, que suben despacio abajo de la pantalla de espera */
-#fantasmas{position:absolute;left:0;right:0;bottom:70px;height:190px;pointer-events:none}
-.fantasma{position:absolute;font-family:var(--serif);font-style:italic;font-weight:300;color:rgba(224,169,85,.13);white-space:nowrap;
-  animation:deriva 14s ease-in-out infinite both}
+/* palabras de ejemplo (lista fija en palabras.js, nunca las reales): entran por los bordes
+   y derivan hacia el QR. El origen de #fantasmas es el centro del QR. */
+#fantasmas{position:absolute;left:50%;top:116px;width:0;height:0;pointer-events:none;z-index:0}
+.fantasma{position:absolute;left:0;top:0;font-family:var(--serif);font-style:italic;font-weight:300;color:rgba(143,189,230,.16);white-space:nowrap;
+  transform:translate(var(--xm),var(--ym)) translate(-50%,-50%);animation:converge var(--dur,26s) cubic-bezier(.3,0,.55,1) infinite both}
 
 /* --- nube de palabras --- */
 .campo-titulo{position:absolute;left:0;right:0;top:34px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
@@ -139,11 +157,15 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 #proyeccion.vertical .contador b{font-size:22px}
 #proyeccion.vertical #nube{left:16px;right:16px;top:170px;bottom:130px}
 #proyeccion.vertical .bloque{gap:2px 16px}
-#proyeccion.vertical .espera-texto{left:28px;top:56px;width:364px}
-#proyeccion.vertical .espera-texto h1{font-size:44px}
-#proyeccion.vertical .pasos{flex-direction:column;gap:14px}
-#proyeccion.vertical .paso{width:auto}
-#proyeccion.vertical .espera-qr{display:none}
+#proyeccion.vertical .espera{gap:20px;padding:0 24px 90px}
+#proyeccion.vertical .espera .kicker{font-size:11px;letter-spacing:.4em;margin-right:-.4em}
+#proyeccion.vertical .espera h1{font-size:38px}
+#proyeccion.vertical .bajada{font-size:18px}
+#proyeccion.vertical .qr-grande,#proyeccion.vertical .espera .url{display:none}
+#proyeccion.vertical .espera-qr{width:200px;height:120px}
+#proyeccion.vertical .espera-qr::before,#proyeccion.vertical #fantasmas{top:60px}
+#proyeccion.vertical .pasos{flex-direction:column;align-items:flex-start;gap:12px}
+#proyeccion.vertical .pasos i{display:none}
 
 /* ================= CELULAR y MODERACIÓN ================= */
 .cel{min-height:100%;display:flex;justify-content:center;
@@ -202,6 +224,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .vacio-txt{font-size:13px;color:var(--tenue);padding:10px 0}
 
 @media (prefers-reduced-motion:reduce){
-  .brasa,.qr-grande,.paso,.flota,.fantasma,.chispa,.primera .txt::before{animation:none!important}
+  .brasa,.qr-grande,.pasos,.flota,.fantasma,.chispa,.primera .txt::before{animation:none!important}
   .palabra.late .txt,.palabra.entra .txt{animation-duration:.01ms!important}
+  .fantasma{opacity:.55}   /* sin deriva: quietas a media distancia y más tenues */
 }

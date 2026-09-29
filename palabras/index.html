@@ -6,7 +6,7 @@
 <title>Muro de Palabras — Colombia Noviolenta</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- rutas absolutas: la página se abre como /palabras (sin barra final) -->
 <link rel="stylesheet" href="/palabras/palabras.css">
 </head>
@@ -17,23 +17,25 @@
   <div id="escena" class="vacio">
     <div id="brasas"></div>
 
-    <!-- pantalla vacía: antes de la primera palabra -->
+    <!-- pantalla vacía: antes de la primera palabra (centrada, fría, azul) -->
     <div class="espera">
-      <div id="fantasmas"></div>
-      <div class="espera-texto">
+      <div class="espera-cabeza">
         <div class="kicker">Una sola palabra</div>
         <h1>En una palabra, ¿qué te llevas?</h1>
         <p class="bajada">Escríbela desde tu celular. Si otras personas piensan lo mismo, tu palabra crece.</p>
-        <div class="pasos">
-          <div class="paso"><b>1</b><i></i><span>Escanea el código con la cámara de tu celular</span></div>
-          <div class="paso"><b>2</b><i></i><span>Escribe una sola palabra: lo que te llevas de esta noche</span></div>
-          <div class="paso"><b>3</b><i></i><span>Mírala aparecer y crecer en esta pantalla</span></div>
-        </div>
       </div>
+      <!-- el QR es el eje: el halo y las palabras fantasma se centran en él -->
       <div class="espera-qr">
+        <div id="fantasmas"></div>
         <img class="qr-grande" src="/palabras/qr-palabras.png" alt="Código QR para participar">
-        <div class="escanea">Escanea aquí</div>
         <div class="url" data-url></div>
+      </div>
+      <div class="pasos">
+        <div class="paso"><b>1</b><span>Escanea el código</span></div>
+        <i></i>
+        <div class="paso"><b>2</b><span>Escribe una palabra</span></div>
+        <i></i>
+        <div class="paso"><b>3</b><span>Mírala crecer</span></div>
       </div>
     </div>
 
