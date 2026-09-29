@@ -70,6 +70,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 
 /* --- nube de palabras --- */
 .campo-titulo{position:absolute;left:0;right:0;top:34px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.campo-titulo .kicker{color:var(--azul-claro)}   /* el mismo azul de la espera: une las dos pantallas */
 .campo-titulo h2{font-family:var(--serif);font-weight:300;font-size:36px;line-height:1.1;max-width:760px;text-wrap:balance}
 .contador{position:absolute;left:34px;top:40px;display:flex;flex-direction:column;gap:2px}
 .contador b{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1;color:var(--oro);transition:color .4s}
@@ -171,6 +172,9 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .cel{min-height:100%;display:flex;justify-content:center;
   background:radial-gradient(ellipse 90% 45% at 50% 0%,var(--tierra) 0%,var(--noche2) 55%,var(--noche) 100%)}
 #formulario,#mGate,#mPanel,.cerrado{width:100%;max-width:420px;padding:40px 24px 32px;display:flex;flex-direction:column;gap:18px}
+/* celular del público: halo azul tenue arriba y eyebrow azul, como la espera del proyector; el dorado queda en el botón */
+#celular{background:radial-gradient(ellipse 90% 45% at 50% 0%,rgba(25,106,172,.24) 0%,var(--noche2) 55%,var(--noche) 100%)}
+#celular .kicker{color:var(--azul-claro)}
 .cel-cabeza{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;margin-bottom:8px}
 .cel h1{font-family:var(--serif);font-weight:300;font-size:32px;line-height:1.1;text-wrap:balance}
 .cel-cabeza p{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--apagado)}
