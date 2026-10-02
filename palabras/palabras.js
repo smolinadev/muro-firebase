@@ -237,10 +237,21 @@ function pintarNube(hayDatos) {
   arriba.forEach(r => colocar(r, $("nArriba")));
   abajo.forEach(r => colocar(r, $("nAbajo")));
 
+  pintarRanking(lista.slice(0, 3));
+  /* la esquina del ranking (más un margen) queda fuera de la nube: si una palabra la pisa,
+     cuenta como que no cabe. En el celular vertical el ranking no existe y no reserva nada.
+     Coordenadas dentro de #nube (el ranking y la nube están los dos en .campo). */
+  const rk = $("ranking"), nube = $("nube");
+  const reserva = VERTICAL || !lista.length ? null : {
+    der: rk.offsetLeft + rk.offsetWidth + 24 - nube.offsetLeft,
+    arr: rk.offsetTop - 20 - nube.offsetTop };
+  const pisa = (b, c) => reserva && b.offsetLeft + c.offsetLeft < reserva.der &&
+    b.offsetTop + c.offsetTop + c.offsetHeight > reserva.arr;
+
   // achica todo hasta que quepa (medido sin transformaciones: offsetTop/Left)
   const bloques = [$("nArriba"), $("nCentro"), $("nAbajo")];
   const cabe = () => bloques.every(b => [...b.children].every(c =>
-    c.offsetTop >= -1 && c.offsetLeft >= -1 &&
+    c.offsetTop >= -1 && c.offsetLeft >= -1 && !pisa(b, c) &&
     c.offsetTop + c.offsetHeight <= b.clientHeight + 1 && c.offsetLeft + c.offsetWidth <= b.clientWidth + 1));
   let k = 1;
   for (let i = 0; i < 25; i++) {
@@ -274,6 +285,41 @@ function pintarNube(hayDatos) {
     o.votos = r.votos; o.nueva = false;
   }
   if (hayDatos) primeraCarga = false;
+}
+
+/* Ranking top 3 (abajo a la izquierda). Recibe la lista ya ordenada como la nube
+   (empate: ts menor), así el orden no salta. Cada fila tiene posición absoluta: cuando
+   el orden cambia se desliza a su nuevo puesto (transition de transform en el CSS). */
+const enRanking = new Map();   // id -> { el, votos }
+const ALTO_FILA = [44, 32, 32];
+function pintarRanking(top) {
+  const caja = $("ranking"), lista = $("rkLista");
+  caja.classList.toggle("sin", !top.length);
+  const ids = new Set(top.map(r => r.id));
+  for (const [id, o] of enRanking) if (!ids.has(id)) {
+    enRanking.delete(id); o.el.style.opacity = 0; setTimeout(() => o.el.remove(), 600);
+  }
+  let y = 0;
+  top.forEach((r, i) => {
+    let o = enRanking.get(r.id);
+    const nueva = !o;
+    if (nueva) {
+      const el = document.createElement("div");
+      el.innerHTML = '<b class="rk-n"></b><span class="rk-pal"></span><span class="rk-v"></span>';
+      o = { el, votos: r.votos }; enRanking.set(r.id, o); lista.appendChild(el);
+    }
+    const el = o.el, [n, pal, vot] = el.children;
+    el.className = "rk-fila p" + (i + 1);
+    el.style.height = ALTO_FILA[i] + "px";
+    n.textContent = i + 1; pal.textContent = r.texto || r.id; vot.textContent = r.votos;
+    if (nueva) {   // entra desde la izquierda, ya en su puesto
+      el.style.transition = "none"; el.style.opacity = 0; el.style.transform = `translate(-14px,${y}px)`;
+      el.getBoundingClientRect(); el.style.transition = "";
+    } else if (r.votos > o.votos) animar(vot, "sube", 700);
+    el.style.opacity = 1; el.style.transform = `translateY(${y}px)`;
+    o.votos = r.votos; y += ALTO_FILA[i];
+  });
+  lista.style.height = y + "px";
 }
 
 /* ================= CELULAR ================= */

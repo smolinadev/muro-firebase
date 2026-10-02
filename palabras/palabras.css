@@ -82,6 +82,32 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 .campo-qr .url{font-size:11px}
 .qr-chico{width:92px;height:92px;border-radius:10px;display:block}
 
+/* ranking top 3: abajo a la izquierda, equilibra el contador (arriba izq.) y el QR (arriba der.).
+   No va encima de nada: pintarNube() le reserva la esquina. En el celular vertical no existe. */
+.ranking{position:absolute;left:34px;bottom:34px;width:250px;transition:opacity .8s ease}
+.ranking.sin{opacity:0}
+.rk-cabeza{display:flex;align-items:center;gap:12px;margin-bottom:10px;
+  font-size:10px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:#a79c86}
+.rk-cabeza::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(224,169,85,.4),rgba(224,169,85,0))}
+.rk-lista{position:relative}
+.rk-fila{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;
+  transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s ease}
+.rk-n{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--sans);
+  border:1px solid rgba(185,173,151,.28);color:var(--tenue);transition:color .9s,border-color .9s,box-shadow .9s}
+.rk-pal{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-family:var(--serif);font-weight:300;font-size:20px;line-height:1.2;color:var(--apagado);
+  transition:font-size .9s cubic-bezier(.2,.8,.2,1),color .9s,text-shadow .9s}
+.rk-v{flex:none;font:600 12px var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.06em;color:var(--tenue);
+  transform-origin:100% 60%;transition:color .9s,font-size .9s}
+.rk-v.sube{animation:cuenta .7s ease}
+/* el primero: dorado, como la líder de la nube (número en moneda dorada y subrayado de luz) */
+.rk-fila.p1 .rk-n{border-color:rgba(255,217,160,.75);color:#1a1206;
+  background:linear-gradient(180deg,#f2c572,var(--oro2));box-shadow:0 0 14px rgba(224,169,85,.45)}
+.rk-fila.p1 .rk-pal{font-size:27px;font-weight:400;color:var(--oro-claro);text-shadow:0 0 18px rgba(255,217,160,.35)}
+.rk-fila.p1 .rk-v{font-size:14px;color:var(--oro)}
+.rk-fila.p1::after{content:"";position:absolute;left:34px;right:0;bottom:2px;height:1px;
+  background:linear-gradient(90deg,rgba(255,217,160,.45),rgba(255,217,160,0))}
+
 /* tres bloques: arriba (se apila hacia el centro), la más votada, abajo.
    Todo es flujo normal con flex-wrap: las palabras nunca se superponen. */
 #nube{position:absolute;left:60px;right:60px;top:150px;bottom:58px;display:flex;flex-direction:column}
@@ -138,8 +164,9 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 @keyframes chispa{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
 
 /* visto desde el celular */
+/* acostado va a la derecha: abajo a la izquierda está el ranking */
 .desde-cel{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:50;
-  display:flex;align-items:center;gap:10px;pointer-events:none}
+  display:flex;align-items:center;justify-content:flex-end;gap:10px;pointer-events:none}
 .desde-cel>*{pointer-events:auto}
 .volver{padding:9px 14px;border-radius:10px;background:rgba(7,8,12,.75);border:1px solid rgba(224,169,85,.4);
   color:var(--tinta);font:500 14px var(--sans);text-decoration:none;white-space:nowrap}
@@ -150,7 +177,7 @@ body{background:var(--noche);color:var(--tinta);font-family:var(--sans)}
 #proyeccion.vertical .desde-cel{flex-direction:column}
 #proyeccion.vertical .tuya{order:0}
 #proyeccion.vertical .volver{padding:11px 20px;border-radius:999px}
-#proyeccion.vertical .campo-qr,#proyeccion.vertical .firma{display:none}
+#proyeccion.vertical .campo-qr,#proyeccion.vertical .firma,#proyeccion.vertical .ranking{display:none}
 #proyeccion.vertical .campo-titulo{top:30px;gap:8px;padding:0 24px}
 #proyeccion.vertical .campo-titulo .kicker{font-size:11px}
 #proyeccion.vertical .campo-titulo h2{font-size:28px;max-width:340px}
